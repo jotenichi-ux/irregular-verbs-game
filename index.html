@@ -1,0 +1,1119 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="中高考常考不规则动词闯关游戏：读例句猜词义、写过去式和过去分词。">
+<title>动词时光机</title>
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=ZCOOL+KuaiLe&display=swap" media="print" onload="this.media='all'">
+<style>
+/* Layout: one screen at a time in a 720px column — home = passenger ticket + mode tiles + vertical rail of stations; play = HUD + question card; result = stars + stats */
+:root{
+  --bg:#e8f0fb; --surface:#ffffff; --surface-2:#f2f6fd; --ink:#16213e; --muted:#58647f; --line:#d2ddee;
+  --brand:#5a3cf2; --brand-ink:#ffffff; --sun:#ff8a1f; --good:#109e69; --bad:#e1434b; --gold:#f2a900;
+  --f-display:"ZCOOL KuaiLe","Baloo 2","PingFang SC","Microsoft YaHei",sans-serif;
+  --f-word:"Baloo 2","Segoe UI",system-ui,sans-serif;
+  --f-ui:system-ui,-apple-system,"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+  --f-ipa:"Segoe UI","Lucida Sans Unicode","Arial Unicode MS",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d1330; --surface:#18204b; --surface-2:#1f2a5c; --ink:#eef1ff; --muted:#a6afd3; --line:#2d3972;
+  --brand:#8f7dff; --brand-ink:#0d1330; --sun:#ffa24d; --good:#3fd69c; --bad:#ff6d73; --gold:#ffcc3a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1330; --surface:#18204b; --surface-2:#1f2a5c; --ink:#eef1ff; --muted:#a6afd3; --line:#2d3972;
+  --brand:#8f7dff; --brand-ink:#0d1330; --sun:#ffa24d; --good:#3fd69c; --bad:#ff6d73; --gold:#ffcc3a; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);background-image:radial-gradient(var(--line) 1.2px,transparent 1.3px);background-size:24px 24px;
+  color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 56px}
+.app{max-width:720px;margin:0 auto}
+section{display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{margin:0;text-wrap:balance}
+button{font:inherit;color:inherit}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.ipa{font-family:var(--f-ipa);color:var(--muted);font-size:14px}
+
+/* buttons */
+.btn{border:0;border-radius:14px;padding:12px 20px;font-weight:700;font-size:16px;background:var(--brand);color:var(--brand-ink);cursor:pointer;
+  box-shadow:0 4px 0 color-mix(in srgb,var(--brand) 55%,#000);transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 color-mix(in srgb,var(--brand) 55%,#000)}
+.btn.ghost{background:var(--surface);color:var(--ink);box-shadow:0 4px 0 var(--line);border:2px solid var(--line)}
+.btn.sun{background:var(--sun);color:#1d1203;box-shadow:0 4px 0 color-mix(in srgb,var(--sun) 55%,#000)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.link{border:0;background:none;color:var(--muted);cursor:pointer;padding:4px 2px;font-size:14px;text-decoration:underline;text-underline-offset:3px}
+
+/* hero */
+.eyebrow{font-family:var(--f-word);font-weight:700;letter-spacing:.14em;font-size:12px;color:var(--brand)}
+h1{font-family:var(--f-display);font-weight:400;font-size:clamp(40px,9vw,64px);line-height:1;color:var(--ink)}
+h1 em{font-style:normal;color:var(--sun)}
+.lede{margin:6px 0 0;color:var(--muted);max-width:56ch}
+
+/* ticket */
+.ticket{display:grid;grid-template-columns:1fr auto;background:var(--surface);border-radius:18px;border:2px solid var(--line);overflow:hidden}
+.tk-main{padding:16px 18px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.tk-label{font-size:12px;letter-spacing:.12em;color:var(--muted)}
+.tk-rank{display:flex;align-items:baseline;gap:10px}
+.tk-rank span{font-family:var(--f-word);font-weight:800;color:var(--brand);font-size:18px}
+.tk-rank b{font-family:var(--f-display);font-weight:400;font-size:28px;line-height:1.1}
+.xpbar{height:12px;border-radius:99px;background:var(--surface-2);border:2px solid var(--line);overflow:hidden}
+.xpbar span{display:block;height:100%;background:linear-gradient(90deg,var(--brand),var(--sun));border-radius:99px;transition:width .6s}
+.tk-sub{font-size:13px;color:var(--muted)}
+.tk-stats{display:flex;flex-direction:column;justify-content:center;gap:8px;padding:14px 18px;border-left:2px dashed var(--line);background:var(--surface-2);position:relative}
+.tk-stats::before,.tk-stats::after{content:"";position:absolute;left:-11px;width:20px;height:20px;border-radius:50%;background:var(--bg)}
+.tk-stats::before{top:-11px}.tk-stats::after{bottom:-11px}
+.tk-stats div{display:flex;align-items:baseline;gap:8px}
+.tk-stats b{font-family:var(--f-word);font-weight:800;font-size:20px;min-width:3.2ch;text-align:right;font-variant-numeric:tabular-nums}
+.tk-stats span{font-size:13px;color:var(--muted)}
+
+/* modes */
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.mode{display:flex;flex-direction:column;gap:4px;text-align:left;padding:14px 14px 16px;border-radius:16px;border:2px solid var(--line);background:var(--surface);cursor:pointer;
+  box-shadow:0 4px 0 var(--line);transition:transform .08s}
+.mode:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+.mode b{font-family:var(--f-display);font-weight:400;font-size:21px}
+.mode span{font-size:13px;color:var(--muted)}
+.m-quick{background:var(--sun);border-color:var(--sun);box-shadow:0 4px 0 color-mix(in srgb,var(--sun) 55%,#000)}
+.m-quick b,.m-quick span{color:#1d1203}
+.mode:disabled{opacity:.55;cursor:not-allowed}
+
+/* map */
+.sec{font-family:var(--f-display);font-weight:400;font-size:26px;margin-top:6px}
+.map{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;position:relative}
+.map::before{content:"";position:absolute;left:21px;top:20px;bottom:20px;width:6px;border-radius:6px;
+  background:repeating-linear-gradient(180deg,var(--line) 0 10px,transparent 10px 16px)}
+.stop{display:grid;grid-template-columns:48px 1fr;gap:12px;align-items:center;position:relative}
+.dot{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:var(--surface);border:4px solid var(--line);
+  font-family:var(--f-word);font-weight:800;font-size:20px;color:var(--muted);z-index:1}
+.stop.done .dot{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.stop.boss .dot{border-color:var(--sun);color:var(--sun)}
+.stop.boss.done .dot{background:var(--sun);color:#1d1203}
+.stopcard{display:flex;flex-direction:column;gap:3px;text-align:left;padding:12px 16px;border-radius:16px;background:var(--surface);border:2px solid var(--line);cursor:pointer;min-width:0;
+  box-shadow:0 4px 0 var(--line);transition:transform .08s,border-color .15s}
+.stopcard:hover{border-color:var(--brand)}
+.stopcard:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+.stop.locked .stopcard{opacity:.5;cursor:not-allowed;box-shadow:none;border-style:dashed}
+.stoptop{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.sname{font-family:var(--f-display);font-weight:400;font-size:21px}
+.scode{font-family:var(--f-word);font-weight:700;font-size:13px;color:var(--brand);letter-spacing:.06em}
+.sdesc{font-size:13.5px;color:var(--muted)}
+.smeta{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;font-size:13px;color:var(--muted);margin-top:2px}
+.stars{color:var(--gold);font-size:18px;letter-spacing:2px;line-height:1}
+.stars i{font-style:normal;color:var(--line)}
+.stopcard{cursor:default;gap:6px}
+.stopcard:hover{border-color:var(--line)}
+.stopcard:active{transform:none;box-shadow:0 4px 0 var(--line)}
+.stop.locked .stopcard{cursor:default}
+.mline{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
+.mbar{flex:1;height:8px;border-radius:99px;background:var(--surface-2);border:1.5px solid var(--line);overflow:hidden}
+.mbar span{display:block;height:100%;background:var(--good);border-radius:99px}
+.cars{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:4px}
+.car{display:flex;flex-direction:column;gap:2px;text-align:left;padding:9px 11px;border-radius:12px;border:2px solid var(--line);background:var(--surface-2);cursor:pointer;min-width:0;box-shadow:0 3px 0 var(--line);transition:transform .08s}
+.car:hover:not(:disabled){border-color:var(--brand)}
+.car:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
+.car:disabled{cursor:not-allowed;opacity:.55;box-shadow:none}
+.carT{display:flex;justify-content:space-between;align-items:center;gap:6px;font-weight:700;font-size:14px}
+.carT .stars{font-size:14px;letter-spacing:1px}
+.carW{font-family:var(--f-word);font-size:13.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.carM{font-size:12px;color:var(--muted)}
+.car.gold{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 14%,var(--surface))}
+.car.gold .carM{color:var(--ink);font-weight:700}
+.car.fullc{border-style:dashed;border-color:var(--brand)}
+.car.fullc .carW{white-space:normal;font-family:var(--f-ui);font-size:12.5px}
+.car.fullc:disabled{border-color:var(--line)}
+.mdots{display:inline-flex;gap:3px;vertical-align:middle}
+.mdots i{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.mdots i.on{background:var(--good)}
+.mstat{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--muted);padding-top:6px;border-top:1.5px dashed var(--line)}
+.lgroup td.md{width:40px}
+.rsub b{color:var(--good);font-size:1.15em}
+.settings{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;font-size:14px;color:var(--muted);padding-top:6px;border-top:2px dashed var(--line)}
+.settings label{display:flex;gap:6px;align-items:center;cursor:pointer}
+.confirm{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:14px;padding:10px 14px;border-radius:12px;background:var(--surface);border:2px solid var(--bad)}
+
+/* play */
+.hud{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.hud b{font-family:var(--f-display);font-weight:400;font-size:22px;flex:1;min-width:0}
+.hearts{font-size:22px;letter-spacing:2px;color:var(--line);line-height:1}
+.hearts .on{color:var(--bad)}
+.score{font-family:var(--f-word);font-weight:800;font-size:20px;font-variant-numeric:tabular-nums}
+.prog{height:14px;border-radius:99px;background:var(--surface);border:2px solid var(--line);overflow:hidden}
+.prog span{display:block;height:100%;background:var(--brand);border-radius:99px;transition:width .3s}
+.prog.timer span{background:var(--sun);transition:width .1s linear}
+.hud2{display:flex;justify-content:space-between;align-items:center;min-height:30px;font-family:var(--f-word);font-weight:700;color:var(--muted)}
+.combo{background:var(--sun);color:#1d1203;padding:2px 12px;border-radius:99px;font-size:15px;animation:pop .3s}
+.qcard{background:var(--surface);border:2px solid var(--line);border-radius:22px;padding:22px 20px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;box-shadow:0 6px 0 var(--line)}
+.qcn{font-size:16px;color:var(--muted)}
+.qword{display:flex;align-items:center;gap:10px;font-family:var(--f-word);font-weight:800;font-size:clamp(44px,11vw,64px);line-height:1.05;color:var(--brand)}
+.say{width:36px;height:36px;border-radius:50%;border:2px solid var(--line);background:var(--surface-2);cursor:pointer;font-size:13px;color:var(--brand);display:inline-grid;place-items:center;flex:none}
+.answers{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.ans{display:flex;flex-direction:column;gap:4px;text-align:left;font-size:13px;color:var(--muted);font-weight:600;min-width:0}
+.ans input{width:100%;font-family:var(--f-word);font-weight:700;font-size:24px;padding:8px 12px;border-radius:12px;border:3px solid var(--line);background:var(--surface-2);color:var(--ink)}
+.ans input.ok{border-color:var(--good);background:color-mix(in srgb,var(--good) 14%,var(--surface))}
+.ans input.no{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--surface));text-decoration:line-through;text-decoration-thickness:2px}
+.qbtns{grid-column:1/-1;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:4px}
+.fb{width:100%;margin-top:10px;padding:14px 16px;border-radius:16px;text-align:left;display:flex;flex-direction:column;gap:6px;animation:rise .25s}
+.fb.good{background:color-mix(in srgb,var(--good) 14%,var(--surface));border:2px solid var(--good)}
+.fb.bad{background:color-mix(in srgb,var(--bad) 10%,var(--surface));border:2px solid var(--bad)}
+.fbhead{font-family:var(--f-display);font-size:22px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.fb.good .fbhead{color:var(--good)}.fb.bad .fbhead{color:var(--bad)}
+.gain{font-family:var(--f-word);font-weight:800;font-size:20px}
+.forms{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-family:var(--f-word);font-weight:800;font-size:24px}
+.forms i{font-style:normal;color:var(--muted);font-weight:500}
+.note{font-size:13.5px;color:var(--sun);font-weight:600}
+.ex{font-family:Georgia,"Times New Roman",serif;font-size:16px}
+.ex mark{background:color-mix(in srgb,var(--gold) 40%,transparent);color:inherit;border-radius:4px;padding:0 2px}
+.qprompt{font-size:20px;margin:4px 0 10px}
+.qprompt b{font-family:var(--f-word);font-weight:800;font-size:clamp(34px,8vw,48px);color:var(--brand);display:block;line-height:1.1}
+.opts{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opt{display:flex;align-items:center;gap:10px;padding:14px 14px;border-radius:14px;border:3px solid var(--line);background:var(--surface-2);cursor:pointer;
+  font-family:var(--f-word);font-weight:700;font-size:22px;text-align:left;box-shadow:0 4px 0 var(--line);transition:transform .08s;min-width:0;overflow-wrap:anywhere}
+.opt:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+.opt kbd{font:600 12px var(--f-ui);color:var(--muted);border:1.5px solid var(--line);border-radius:6px;padding:1px 6px;flex:none}
+.opt.ok{border-color:var(--good);background:color-mix(in srgb,var(--good) 18%,var(--surface))}
+.opt.no{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,var(--surface))}
+.opt:disabled{cursor:default}
+.qlabel{font-size:12px;letter-spacing:.12em;color:var(--muted);font-weight:600}
+.sentence{font-family:Georgia,"Times New Roman",serif;font-size:clamp(19px,4.6vw,24px);line-height:1.45;padding:12px 16px;border-radius:14px;background:var(--surface-2);border:2px dashed var(--line);width:100%}
+.sentence mark{background:color-mix(in srgb,var(--gold) 40%,transparent);color:inherit;border-radius:4px;padding:0 2px}
+.blank{display:inline-block;min-width:4.5ch;border-bottom:3px solid var(--brand);color:transparent;line-height:1}
+.bhint{font-family:var(--f-word);font-weight:700;color:var(--brand);margin-left:4px;font-size:.9em}
+.mwrap{width:100%;display:flex;flex-direction:column;gap:6px;margin-top:10px;border-radius:14px}
+.mwrap.need{animation:shake .35s;outline:3px solid var(--sun);outline-offset:4px}
+.mlabel{font-size:13px;font-weight:600;color:var(--muted);text-align:left}
+.mopts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mopt{display:flex;align-items:center;gap:8px;text-align:left;padding:10px 12px;border-radius:12px;border:2px solid var(--line);background:var(--surface-2);cursor:pointer;font-size:15px;min-width:0;box-shadow:0 3px 0 var(--line)}
+.mopt kbd{font:600 11px var(--f-ui);color:var(--muted);border:1.5px solid var(--line);border-radius:6px;padding:0 5px;flex:none}
+.mopt[aria-pressed=true]{border-color:var(--brand);background:color-mix(in srgb,var(--brand) 14%,var(--surface));font-weight:700}
+.mopt.ok{border-color:var(--good);background:color-mix(in srgb,var(--good) 18%,var(--surface))}
+.mopt.no{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,var(--surface))}
+.mopt:disabled{cursor:default}
+.fbcn{font-size:16px;font-weight:700}
+.opt.cnopt{font-family:var(--f-ui);font-size:17px;font-weight:600}
+.mcfb{min-height:28px;font-size:16px;color:var(--bad);font-weight:600}
+.mcfb b{font-family:var(--f-word);font-size:20px}
+
+/* result */
+.rcard{background:var(--surface);border:2px solid var(--line);border-radius:22px;padding:26px 20px;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center;box-shadow:0 6px 0 var(--line)}
+.rtitle{font-family:var(--f-display);font-weight:400;font-size:clamp(36px,8vw,52px);line-height:1.05}
+.rsub{color:var(--muted);margin:0}
+.bigstars{font-size:54px;letter-spacing:8px;color:var(--gold);line-height:1}
+.bigstars i{font-style:normal;color:var(--line)}
+.bigstars span{display:inline-block;animation:pop .45s backwards}
+.rstats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%}
+.rstats div{background:var(--surface-2);border-radius:14px;padding:10px 6px;display:flex;flex-direction:column}
+.rstats b{font-family:var(--f-word);font-weight:800;font-size:26px;font-variant-numeric:tabular-nums}
+.rstats span{font-size:12.5px;color:var(--muted)}
+.levelup{background:var(--sun);color:#1d1203;font-weight:700;padding:8px 16px;border-radius:99px}
+.missed{width:100%;text-align:left}
+.missed h3{font-size:15px;margin-bottom:6px}
+.missed ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.missed li{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:8px 12px;border-radius:10px;background:var(--surface-2)}
+.missed li b{font-family:var(--f-word);font-weight:700;font-size:17px}
+.missed li span{color:var(--muted);font-size:14px}
+.ractions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+
+/* library */
+.libbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.libbar input{flex:1 1 200px;min-width:0;font:inherit;font-size:16px;padding:10px 14px;border-radius:12px;border:2px solid var(--line);background:var(--surface);color:var(--ink)}
+.lgroup{background:var(--surface);border:2px solid var(--line);border-radius:18px;padding:16px}
+.lgroup h2{font-family:var(--f-display);font-weight:400;font-size:22px}
+.lgroup h3{font-size:13px;color:var(--sun);margin:12px 0 4px}
+.lgroup .code{font-family:var(--f-word);font-weight:700;color:var(--brand);font-size:14px;margin-left:8px}
+.tbl{overflow-x:auto}
+.lgroup table{width:100%;border-collapse:collapse;min-width:460px}
+.lgroup td{padding:6px 6px;border-bottom:1.5px solid var(--line);vertical-align:middle}
+.lgroup td.w{font-family:var(--f-word);font-weight:700;font-size:17px;white-space:nowrap}
+.lgroup td.w small{display:block;font-family:var(--f-ipa);font-weight:400;font-size:12px;color:var(--muted)}
+.lgroup td.c{font-size:14px;color:var(--muted)}
+.lgroup td.s{width:44px}
+.empty{color:var(--muted);text-align:center;padding:20px}
+
+/* daily / coins */
+.daily{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;background:var(--surface);border:2px solid var(--line);border-radius:18px;padding:12px 16px}
+.flame,.coinbox{display:flex;flex-direction:column;align-items:center;line-height:1.1;min-width:64px}
+.flame b,.coinbox b{font-family:var(--f-word);font-weight:800;font-size:26px;font-variant-numeric:tabular-nums}
+.flame span:last-child,.coinbox span:last-child{font-size:11.5px;color:var(--muted)}
+.fico,.cico{width:24px;height:24px;display:inline-block}
+.cico.sm{width:18px;height:18px;vertical-align:-3px}
+.flame:not(.lit) .fico{filter:grayscale(1);opacity:.45}
+.flame.lit .fico{animation:pop .5s}
+.dgoal{display:flex;flex-direction:column;gap:5px;min-width:0}
+.dtop{display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
+.dtop b{color:var(--ink);font-family:var(--f-word)}
+.dgoal .xpbar span{background:linear-gradient(90deg,var(--sun),var(--gold))}
+.dtip{font-size:12.5px;color:var(--muted)}
+.hcoin{font-family:var(--f-word);font-weight:800;font-size:17px;display:flex;align-items:center;gap:4px}
+/* panels */
+.panel{background:var(--surface);border:2px solid var(--line);border-radius:18px;padding:0 16px}
+.panel summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:14px 0;flex-wrap:wrap}
+.panel summary::-webkit-details-marker{display:none}
+.panel summary::after{content:"展开";font-size:12px;color:var(--brand);font-weight:700}
+.panel[open] summary::after{content:"收起"}
+.ptitle{font-family:var(--f-display);font-size:22px}
+.pmeta{font-size:13px;color:var(--muted);flex:1}
+.pnote{font-size:13px;color:var(--muted);margin:0 0 10px}
+.shop,.achs{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;padding-bottom:16px}
+.skin{display:flex;flex-direction:column;gap:4px;align-items:flex-start;padding:10px;border-radius:14px;border:2px solid var(--line);background:var(--surface-2);cursor:pointer;text-align:left;box-shadow:0 3px 0 var(--line)}
+.skin .sw{width:100%;height:30px;border-radius:8px}
+.skin b{font-size:14px}.skin span:last-child{font-size:12px;color:var(--muted)}
+.skin.on{border-color:var(--brand);box-shadow:0 3px 0 var(--brand)}
+.skin[data-poor]{opacity:.6}
+.ach{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;padding:10px 8px;border-radius:14px;background:var(--surface-2);border:2px solid var(--line)}
+.ach .aico{width:34px;height:34px}.ach .aico svg{width:100%;height:100%}
+.ach b{font-size:13.5px}.ach span:last-child{font-size:11.5px;color:var(--muted)}
+.ach:not(.got){opacity:.45}.ach:not(.got) .aico{filter:grayscale(1)}
+.ach.got{border-color:var(--gold)}
+/* toasts */
+#toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:60;display:flex;flex-direction:column;gap:8px;width:min(92vw,380px);pointer-events:none}
+.toast{display:flex;gap:10px;align-items:center;background:var(--surface);border:2px solid var(--gold);border-radius:14px;padding:10px 14px;box-shadow:0 8px 24px rgba(0,0,0,.18);animation:rise .3s;transition:opacity .4s,transform .4s}
+.toast.out{opacity:0;transform:translateY(10px)}
+.toast b{display:block;font-size:14.5px}.toast small{font-size:12.5px;color:var(--muted)}
+.tico{flex:none;display:grid}
+/* play extras */
+.progwrap{position:relative;padding-top:6px}
+.train{position:absolute;top:-8px;transition:left .5s;filter:drop-shadow(0 2px 0 var(--line))}
+.fever .prog span{background:repeating-linear-gradient(-45deg,var(--sun) 0 10px,var(--gold) 10px 20px);background-size:28px 28px;animation:slide .6s linear infinite}
+.hyper .prog span{background:repeating-linear-gradient(-45deg,var(--bad) 0 10px,var(--sun) 10px 20px);background-size:28px 28px;animation:slide .3s linear infinite}
+.fever .qcard{border-color:var(--sun);box-shadow:0 6px 0 var(--sun)}
+.hyper .qcard{border-color:var(--bad);box-shadow:0 6px 0 var(--bad),0 0 0 6px color-mix(in srgb,var(--sun) 25%,transparent)}
+.fever .combo{background:var(--gold)}.hyper .combo{background:var(--bad);color:#fff}
+.hyper .train{animation:bob .25s infinite alternate}
+.qcard.golden{border-color:var(--gold);background:linear-gradient(180deg,color-mix(in srgb,var(--gold) 16%,var(--surface)),var(--surface) 40%)}
+.gbanner{background:var(--gold);color:#241800;font-weight:700;font-size:13.5px;padding:5px 14px;border-radius:99px;animation:pop .4s}
+.revive{width:100%;margin-top:10px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:12px 14px;border-radius:14px;border:2px dashed var(--sun);text-align:left}
+.revive b{font-family:var(--f-display);font-size:20px;color:var(--bad)}.revive span{flex:1;min-width:180px;font-size:13.5px;color:var(--muted)}
+.dayline{font-size:13px;color:var(--muted)}
+.chest{position:relative;border:0;background:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 10px}
+.chest .lid{width:84px;height:24px;border-radius:14px 14px 4px 4px;background:var(--sun);border:3px solid color-mix(in srgb,var(--sun) 55%,#000);transition:transform .4s;transform-origin:10% 100%}
+.chest .box{width:84px;height:40px;margin-top:-3px;border-radius:4px 4px 10px 10px;background:color-mix(in srgb,var(--sun) 75%,#000);border:3px solid color-mix(in srgb,var(--sun) 45%,#000);position:relative}
+.chest .box::after{content:"";position:absolute;left:50%;top:-3px;width:14px;height:16px;margin-left:-7px;background:var(--gold);border-radius:3px}
+.chest .ctext{font-weight:700;font-size:15px}
+.chest .ctext em{font-style:normal;color:var(--bad);margin-right:6px}
+.chest.shaking{animation:shake .25s 3}
+.chest.open .lid{transform:rotate(-35deg) translateY(-6px)}
+.chest.open .ctext{font-family:var(--f-word);font-size:24px;font-weight:800;color:var(--ink);animation:pop .4s}
+/* shop */
+.modes{grid-template-columns:repeat(4,1fr)}
+.m-shop{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 14%,var(--surface));box-shadow:0 4px 0 color-mix(in srgb,var(--gold) 60%,var(--line))}
+.tk-title{font-size:12.5px;font-weight:700;padding:2px 10px;border-radius:99px;background:color-mix(in srgb,var(--gold) 30%,var(--surface));color:var(--ink);border:1.5px solid var(--gold);white-space:nowrap}
+.tk-rank .tk-title{font-family:var(--f-ui);font-size:12.5px;font-weight:700;color:var(--ink);align-self:center}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.tab{flex:none;border:2px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 14px;font-weight:700;font-size:14px;cursor:pointer;color:var(--muted)}
+.tab[aria-selected=true]{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.shopgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.card{display:flex;flex-direction:column;gap:5px;padding:12px;border-radius:16px;border:2px solid var(--line);background:var(--surface);box-shadow:0 4px 0 var(--line);min-width:0}
+.card.on{border-color:var(--brand);box-shadow:0 4px 0 var(--brand)}
+.card b{font-size:15px}
+.cdesc{font-size:12.5px;color:var(--muted);line-height:1.4}
+.cstate{font-size:12.5px;color:var(--muted);margin-top:auto}
+.cbtns{display:flex;gap:6px;flex-wrap:wrap}
+.btn.sm{padding:7px 12px;font-size:13.5px;border-radius:10px;box-shadow:0 3px 0 color-mix(in srgb,var(--brand) 55%,#000);flex:1}
+.btn.ghost.sm{box-shadow:0 3px 0 var(--line);border-width:1.5px}
+.pv{display:grid;place-items:center;height:64px;border-radius:12px;background:var(--surface-2);border:1.5px solid var(--line);overflow:hidden}
+.pv-item{font-family:var(--f-word);font-weight:800;font-size:26px;color:var(--brand)}
+.pv-deco svg{width:80px;height:50px}
+.pv-sfx{display:flex;align-items:flex-end;justify-content:center;gap:5px;padding:12px}
+.pv-sfx i{width:8px;border-radius:4px;background:var(--brand)}
+.pv-fx{font-size:22px;letter-spacing:4px;color:var(--sun);display:flex;align-items:center;justify-content:center;gap:6px}
+.pv-fx .r{width:14px;height:7px;background:var(--brand);transform:rotate(20deg)}.pv-fx .r.b{background:var(--sun);transform:rotate(-30deg)}.pv-fx .r.c{background:var(--good)}
+.chip{font-size:12px;font-weight:700;padding:2px 9px;border-radius:99px;background:color-mix(in srgb,var(--good) 18%,var(--surface));color:var(--good);border:1.5px solid var(--good)}
+/* backgrounds (also used as shop previews) */
+body.bg-grid,.pv.bg-grid{background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:22px 22px}
+body.bg-rails,.pv.bg-rails{background-image:repeating-linear-gradient(90deg,transparent 0 30px,var(--line) 30px 34px,transparent 34px 70px,var(--line) 70px 74px,transparent 74px 104px),repeating-linear-gradient(0deg,transparent 0 18px,color-mix(in srgb,var(--line) 70%,transparent) 18px 24px);background-size:104px 24px}
+body.bg-night,.pv.bg-night{background-image:radial-gradient(var(--gold) 1.2px,transparent 1.6px),radial-gradient(var(--brand) 1px,transparent 1.5px),radial-gradient(var(--line) 1px,transparent 1.4px);background-size:57px 57px,83px 83px,19px 19px;background-position:0 0,30px 40px,0 0}
+.puff{animation:puff 1.6s infinite ease-out;transform-box:fill-box;transform-origin:center}.puff.p2{animation-delay:.8s}
+@keyframes puff{0%{opacity:.8;transform:scale(.5) translateY(4px)}100%{opacity:0;transform:scale(1.4) translateY(-6px)}}
+.twk{animation:twk 1s infinite alternate}.twk.t2{animation-delay:.5s}
+@keyframes twk{from{opacity:.25}to{opacity:1}}
+@keyframes slide{to{background-position:28px 0}}
+@keyframes bob{to{transform:translateY(-3px)}}
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50}
+.shake{animation:shake .35s}
+@keyframes shake{20%{transform:translateX(-8px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+@keyframes pop{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+@keyframes rise{from{transform:translateY(6px);opacity:.3}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:560px){
+  .modes{grid-template-columns:1fr}
+  .ticket{grid-template-columns:1fr}
+  .tk-stats{flex-direction:row;justify-content:space-around;border-left:0;border-top:2px dashed var(--line)}
+  .tk-stats::before,.tk-stats::after{display:none}
+  .tk-stats div{flex-direction:column;align-items:center;gap:0}
+  .tk-stats b{min-width:0;text-align:center}
+  .answers{grid-template-columns:1fr}
+  .opts{grid-template-columns:1fr}
+  .mopts{grid-template-columns:1fr}
+  .modes{grid-template-columns:1fr 1fr}
+  .daily{grid-template-columns:1fr 1fr}
+  .dgoal{grid-column:1/-1;order:3}
+  .rstats{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+<style id="skinStyle"></style>
+
+
+</head>
+<body>
+<canvas id="fx" hidden></canvas>
+<div id="toasts" aria-live="polite"></div>
+<div class="app">
+
+<section id="home">
+  <header>
+    <div class="eyebrow">IRREGULAR VERBS · 不规则动词闯关</div>
+    <h1>动词<em>时光机</em></h1>
+    <p class="lede">读例句、猜词义、写出过去式和过去分词，每答对一题，列车就往“过去”开一站。7 个站点、<span id="nCars"></span> 节车厢，<span id="nVerbs"></span> 个中高考常考不规则动词全部要考到。每个词答对 3 次才算真正掌握。</p>
+  </header>
+
+  <div class="ticket">
+    <div class="tk-main">
+      <div class="tk-label">乘客等级</div>
+      <div class="tk-rank"><span id="rankLvl">Lv.1</span><b id="rankName">见习乘客</b><span class="tk-title" id="tkTitle" hidden></span></div>
+      <div class="xpbar"><span id="xpFill"></span></div>
+      <div class="tk-sub"><span id="xp">0</span> XP · <span id="xpNext"></span></div>
+    </div>
+    <div class="tk-stats">
+      <div><b id="statStars">0</b><span>星星</span></div>
+      <div><b id="statBest">0</b><span>已掌握</span></div>
+      <div><b id="statWrong">0</b><span>错题</span></div>
+    </div>
+  </div>
+
+  <div class="daily">
+    <div class="flame" id="flameBox"><span class="fico"></span><b id="streak">0</b><span>天连续打卡</span></div>
+    <div class="dgoal">
+      <div class="dtop"><span>今日目标</span><b><span id="dxp">0</span> / 100 XP</b></div>
+      <div class="xpbar"><span id="dfill"></span></div>
+      <div class="dtip" id="dtip"></div>
+    </div>
+    <div class="coinbox"><span class="cico"></span><b id="coins">0</b><span>时光币</span></div>
+  </div>
+
+  <div class="modes">
+    <button type="button" class="mode m-quick" id="btnQuick"><b>60 秒快答</b><span id="quickBest"></span></button>
+    <button type="button" class="mode" id="btnReview"><b>错题复习</b><span id="reviewCount"></span></button>
+    <button type="button" class="mode m-shop" id="btnShop"><b>车站小卖部</b><span id="shopTip">道具、涂装、称号、音效…</span></button>
+    <button type="button" class="mode" id="btnLib"><b>动词词库</b><span>按规律查看全部动词和读音</span></button>
+  </div>
+
+  <h2 class="sec">闯关路线</h2>
+  <ol class="map" id="map"></ol>
+
+  <details class="panel" id="achPanel">
+    <summary><span class="ptitle">成就徽章</span><span class="pmeta" id="achCount"></span></summary>
+    <div class="achs" id="achs"></div>
+  </details>
+
+  <div class="settings">
+    <button type="button" class="link" id="mute"></button>
+    <label><input type="checkbox" id="unlock"> 老师模式：解锁全部站点</label>
+    <button type="button" class="link" id="reset">清空我的进度</button>
+  </div>
+  <div class="confirm" id="resetConfirm" hidden>
+    <span>清空后等级、星星、纪录和错题都会归零，无法恢复。</span>
+    <button type="button" class="btn ghost" id="resetNo">取消</button>
+    <button type="button" class="btn" id="resetYes" style="background:var(--bad)">确认清空</button>
+  </div>
+</section>
+
+<section id="play" hidden>
+  <div class="hud">
+    <button type="button" class="link" id="quit">← 退出</button>
+    <b id="hudTitle"></b>
+    <span class="chip" id="shieldChip" hidden>护盾</span>
+    <span class="hearts" id="hearts"></span>
+    <span class="hcoin"><span class="cico sm"></span><span id="hudCoins">0</span></span>
+    <span class="score"><span id="hudScore">0</span> 分</span>
+  </div>
+  <div class="progwrap"><div class="prog" id="prog"><span id="progFill"></span></div><span class="train" id="train"></span></div>
+  <div class="hud2"><span id="hudProg"></span><span class="combo" id="combo" hidden></span></div>
+  <div id="stage"></div>
+</section>
+
+<section id="result" hidden></section>
+
+<section id="shopv" hidden>
+  <div class="hud"><button type="button" class="link" id="shopBack">← 返回</button><b>车站小卖部</b><span class="hcoin"><span class="cico sm"></span><span id="shopCoins">0</span></span></div>
+  <p class="pnote">答对一题得 1 枚时光币，神秘乘客 5 枚，过站开宝箱、解锁成就、完成每日目标都有奖励。道具用掉就没了，装扮买一次永久拥有。</p>
+  <div class="tabs" id="shopTabs" role="tablist"></div>
+  <div class="shopgrid" id="shopGrid"></div>
+</section>
+
+<section id="lib" hidden>
+  <div class="hud"><button type="button" class="link" id="libBack">← 返回</button><b>动词词库</b></div>
+  <div class="libbar"><input type="search" id="libq" placeholder="搜索单词或中文，如 bring / 带来" aria-label="搜索动词"></div>
+  <div id="libList" style="display:flex;flex-direction:column;gap:14px"></div>
+</section>
+
+</div>
+
+<script>
+const D={"rows": [{"n": 1, "g": "AAA", "sub": "", "b": "cut", "p": "cut", "pp": "cut", "ib": "kʌt", "ip": "kʌt", "ipp": "kʌt", "cn": "v. 切，割；削减", "ex": "He cut his finger yesterday.", "note": "", "si": 0}, {"n": 2, "g": "AAA", "sub": "", "b": "put", "p": "put", "pp": "put", "ib": "pʊt", "ip": "pʊt", "ipp": "pʊt", "cn": "v. 放，摆", "ex": "I have put the book on your desk.", "note": "", "si": 0}, {"n": 3, "g": "AAA", "sub": "", "b": "let", "p": "let", "pp": "let", "ib": "let", "ip": "let", "ipp": "let", "cn": "v. 让，允许", "ex": "She let me use her phone.", "note": "", "si": 0}, {"n": 4, "g": "AAA", "sub": "", "b": "set", "p": "set", "pp": "set", "ib": "set", "ip": "set", "ipp": "set", "cn": "v. 放置；设定；（日）落", "ex": "The sun has already set.", "note": "", "si": 0}, {"n": 5, "g": "AAA", "sub": "", "b": "hit", "p": "hit", "pp": "hit", "ib": "hɪt", "ip": "hɪt", "ipp": "hɪt", "cn": "v. 打，击中", "ex": "The ball hit the window.", "note": "", "si": 0}, {"n": 6, "g": "AAA", "sub": "", "b": "hurt", "p": "hurt", "pp": "hurt", "ib": "hɜːt", "ip": "hɜːt", "ipp": "hɜːt", "cn": "v. 伤害；疼痛", "ex": "He hurt his leg in the match.", "note": "", "si": 0}, {"n": 7, "g": "AAA", "sub": "", "b": "cost", "p": "cost", "pp": "cost", "ib": "kɒst", "ip": "kɒst", "ipp": "kɒst", "cn": "v. 花费（钱）", "ex": "The bike cost me 500 yuan.", "note": "", "si": 0}, {"n": 8, "g": "AAA", "sub": "", "b": "shut", "p": "shut", "pp": "shut", "ib": "ʃʌt", "ip": "ʃʌt", "ipp": "ʃʌt", "cn": "v. 关上", "ex": "She shut the door quietly.", "note": "", "si": 0}, {"n": 9, "g": "AAA", "sub": "", "b": "spread", "p": "spread", "pp": "spread", "ib": "spred", "ip": "spred", "ipp": "spred", "cn": "v. 传播；展开", "ex": "The news has spread quickly.", "note": "", "si": 0}, {"n": 10, "g": "AAA", "sub": "", "b": "quit", "p": "quit", "pp": "quit", "ib": "kwɪt", "ip": "kwɪt", "ipp": "kwɪt", "cn": "v. 放弃；辞职", "ex": "He quit smoking last year.", "note": "", "si": 0}, {"n": 11, "g": "AAA", "sub": "", "b": "cast", "p": "cast", "pp": "cast", "ib": "kɑːst", "ip": "kɑːst", "ipp": "kɑːst", "cn": "v. 投，抛；投射", "ex": "The tree cast a long shadow.", "note": "", "si": 0}, {"n": 12, "g": "AAA", "sub": "", "b": "burst", "p": "burst", "pp": "burst", "ib": "bɜːst", "ip": "bɜːst", "ipp": "bɜːst", "cn": "v. 爆裂；突然…起来", "ex": "She burst into tears.", "note": "", "si": 0}, {"n": 13, "g": "AAA", "sub": "", "b": "bet", "p": "bet", "pp": "bet", "ib": "bet", "ip": "bet", "ipp": "bet", "cn": "v. 打赌", "ex": "I bet you can't do it.", "note": "", "si": 0}, {"n": 14, "g": "AAA", "sub": "", "b": "fit", "p": "fit", "pp": "fit", "ib": "fɪt", "ip": "fɪt", "ipp": "fɪt", "cn": "v. 适合，合身", "ex": "The coat fit him perfectly.", "note": "英式常用 fitted", "si": 0}, {"n": 15, "g": "AAA", "sub": "", "b": "rid", "p": "rid", "pp": "rid", "ib": "rɪd", "ip": "rɪd", "ipp": "rɪd", "cn": "v. 使摆脱", "ex": "We got rid of the old sofa.", "note": "", "si": 0}, {"n": 16, "g": "AAA", "sub": "", "b": "split", "p": "split", "pp": "split", "ib": "splɪt", "ip": "splɪt", "ipp": "splɪt", "cn": "v. 分开；劈开", "ex": "They split the bill.", "note": "", "si": 0}, {"n": 17, "g": "AAA", "sub": "", "b": "thrust", "p": "thrust", "pp": "thrust", "ib": "θrʌst", "ip": "θrʌst", "ipp": "θrʌst", "cn": "v. 猛推；刺", "ex": "He thrust the money into my hand.", "note": "", "si": 0}, {"n": 18, "g": "AAA", "sub": "", "b": "upset", "p": "upset", "pp": "upset", "ib": "ʌpˈset", "ip": "ʌpˈset", "ipp": "ʌpˈset", "cn": "v. 使心烦；打翻", "ex": "The bad news upset her.", "note": "", "si": 0}, {"n": 19, "g": "AAA", "sub": "", "b": "broadcast", "p": "broadcast", "pp": "broadcast", "ib": "ˈbrɔːdkɑːst", "ip": "ˈbrɔːdkɑːst", "ipp": "ˈbrɔːdkɑːst", "cn": "v. 广播，播送", "ex": "The match was broadcast live.", "note": "", "si": 0}, {"n": 20, "g": "AAA", "sub": "", "b": "forecast", "p": "forecast", "pp": "forecast", "ib": "ˈfɔːkɑːst", "ip": "ˈfɔːkɑːst", "ipp": "ˈfɔːkɑːst", "cn": "v. 预报，预测", "ex": "Rain is forecast for tomorrow.", "note": "", "si": 0}, {"n": 21, "g": "AAA", "sub": "", "b": "read", "p": "read", "pp": "read", "ib": "riːd", "ip": "red", "ipp": "red", "cn": "v. 读，阅读", "ex": "I read that novel last week.", "note": "拼写不变，读音变 /red/", "si": 0}, {"n": 22, "g": "ABB", "sub": "① -ought / -aught 家族（读音都是 /ɔːt/）", "b": "buy", "p": "bought", "pp": "bought", "ib": "baɪ", "ip": "bɔːt", "ipp": "bɔːt", "cn": "v. 买", "ex": "I bought a new bag yesterday.", "note": "", "si": 0}, {"n": 23, "g": "ABB", "sub": "① -ought / -aught 家族（读音都是 /ɔːt/）", "b": "bring", "p": "brought", "pp": "brought", "ib": "brɪŋ", "ip": "brɔːt", "ipp": "brɔːt", "cn": "v. 带来", "ex": "Have you brought your homework?", "note": "", "si": 0}, {"n": 24, "g": "ABB", "sub": "① -ought / -aught 家族（读音都是 /ɔːt/）", "b": "think", "p": "thought", "pp": "thought", "ib": "θɪŋk", "ip": "θɔːt", "ipp": "θɔːt", "cn": "v. 想；认为", "ex": "I thought you were at home.", "note": "", "si": 0}, {"n": 25, "g": "ABB", "sub": "① -ought / -aught 家族（读音都是 /ɔːt/）", "b": "fight", "p": "fought", "pp": "fought", "ib": "faɪt", "ip": "fɔːt", "ipp": "fɔːt", "cn": "v. 打架；战斗", "ex": "They fought for freedom.", "note": "", "si": 0}, {"n": 26, "g": "ABB", "sub": "① -ought / -aught 家族（读音都是 /ɔːt/）", "b": "seek", "p": "sought", "pp": "sought", "ib": "siːk", "ip": "sɔːt", "ipp": "sɔːt", "cn": "v. 寻找；寻求", "ex": "He sought advice from his teacher.", "note": "", "si": 0}, {"n": 27, "g": "ABB", "sub": "① -ought / -aught 家族（读音都是 /ɔːt/）", "b": "teach", "p": "taught", "pp": "taught", "ib": "tiːtʃ", "ip": "tɔːt", "ipp": "tɔːt", "cn": "v. 教", "ex": "Mr. Li taught us English last year.", "note": "", "si": 0}, {"n": 28, "g": "ABB", "sub": "① -ought / -aught 家族（读音都是 /ɔːt/）", "b": "catch", "p": "caught", "pp": "caught", "ib": "kætʃ", "ip": "kɔːt", "ipp": "kɔːt", "cn": "v. 抓住；赶上", "ex": "I caught the last bus.", "note": "", "si": 0}, {"n": 29, "g": "ABB", "sub": "② 词尾 -d 变 -t", "b": "build", "p": "built", "pp": "built", "ib": "bɪld", "ip": "bɪlt", "ipp": "bɪlt", "cn": "v. 建造", "ex": "The bridge was built in 1990.", "note": "", "si": 1}, {"n": 30, "g": "ABB", "sub": "② 词尾 -d 变 -t", "b": "send", "p": "sent", "pp": "sent", "ib": "send", "ip": "sent", "ipp": "sent", "cn": "v. 发送；寄", "ex": "I have sent you an email.", "note": "", "si": 1}, {"n": 31, "g": "ABB", "sub": "② 词尾 -d 变 -t", "b": "spend", "p": "spent", "pp": "spent", "ib": "spend", "ip": "spent", "ipp": "spent", "cn": "v. 花费（时间、钱）", "ex": "She spent two hours on the essay.", "note": "", "si": 1}, {"n": 32, "g": "ABB", "sub": "② 词尾 -d 变 -t", "b": "lend", "p": "lent", "pp": "lent", "ib": "lend", "ip": "lent", "ipp": "lent", "cn": "v. 借出", "ex": "He lent me his bike.", "note": "", "si": 1}, {"n": 33, "g": "ABB", "sub": "② 词尾 -d 变 -t", "b": "bend", "p": "bent", "pp": "bent", "ib": "bend", "ip": "bent", "ipp": "bent", "cn": "v. 弯曲；弯腰", "ex": "She bent down to pick it up.", "note": "", "si": 1}, {"n": 34, "g": "ABB", "sub": "③ 长元音 /iː/ 变短元音 /e/，再加 -t 或 -d", "b": "keep", "p": "kept", "pp": "kept", "ib": "kiːp", "ip": "kept", "ipp": "kept", "cn": "v. 保持；保存", "ex": "He kept the secret for years.", "note": "", "si": 2}, {"n": 35, "g": "ABB", "sub": "③ 长元音 /iː/ 变短元音 /e/，再加 -t 或 -d", "b": "sleep", "p": "slept", "pp": "slept", "ib": "sliːp", "ip": "slept", "ipp": "slept", "cn": "v. 睡觉", "ex": "I slept for ten hours.", "note": "", "si": 2}, {"n": 36, "g": "ABB", "sub": "③ 长元音 /iː/ 变短元音 /e/，再加 -t 或 -d", "b": "sweep", "p": "swept", "pp": "swept", "ib": "swiːp", "ip": "swept", "ipp": "swept", "cn": "v. 打扫", "ex": "She has swept the floor.", "note": "", "si": 2}, {"n": 37, "g": "ABB", "sub": "③ 长元音 /iː/ 变短元音 /e/，再加 -t 或 -d", "b": "weep", "p": "wept", "pp": "wept", "ib": "wiːp", "ip": "wept", "ipp": "wept", "cn": "v. 哭泣", "ex": "The child wept bitterly.", "note": "", "si": 2}, {"n": 38, "g": "ABB", "sub": "③ 长元音 /iː/ 变短元音 /e/，再加 -t 或 -d", "b": "feel", "p": "felt", "pp": "felt", "ib": "fiːl", "ip": "felt", "ipp": "felt", "cn": "v. 感觉", "ex": "I felt tired after the run.", "note": "", "si": 2}, {"n": 39, "g": "ABB", "sub": "③ 长元音 /iː/ 变短元音 /e/，再加 -t 或 -d", "b": "kneel", "p": "knelt", "pp": "knelt", "ib": "niːl", "ip": "nelt", "ipp": "nelt", "cn": "v. 跪下", "ex": "She knelt down to pray.", "note": "*", "si": 2}, {"n": 40, "g": "ABB", "sub": "③ 长元音 /iː/ 变短元音 /e/，再加 -t 或 -d", "b": "deal", "p": "dealt", "pp": "dealt", "ib": "diːl", "ip": "delt", "ipp": "delt", "cn": "v. 处理；交易", "ex": "We dealt with the problem at once.", "note": "", "si": 2}, {"n": 41, "g": "ABB", "sub": "③ 长元音 /iː/ 变短元音 /e/，再加 -t 或 -d", "b": "mean", "p": "meant", "pp": "meant", "ib": "miːn", "ip": "ment", "ipp": "ment", "cn": "v. 意思是；打算", "ex": "I meant to call you.", "note": "", "si": 2}, {"n": 42, "g": "ABB", "sub": "③ 长元音 /iː/ 变短元音 /e/，再加 -t 或 -d", "b": "dream", "p": "dreamt", "pp": "dreamt", "ib": "driːm", "ip": "dremt", "ipp": "dremt", "cn": "v. 做梦；梦想", "ex": "I dreamt of flying last night.", "note": "*", "si": 2}, {"n": 43, "g": "ABB", "sub": "③ 长元音 /iː/ 变短元音 /e/，再加 -t 或 -d", "b": "lean", "p": "leant", "pp": "leant", "ib": "liːn", "ip": "lent", "ipp": "lent", "cn": "v. 倚，靠", "ex": "He leant against the wall.", "note": "*", "si": 2}, {"n": 44, "g": "ABB", "sub": "③ 长元音 /iː/ 变短元音 /e/，再加 -t 或 -d", "b": "leap", "p": "leapt", "pp": "leapt", "ib": "liːp", "ip": "lept", "ipp": "lept", "cn": "v. 跳跃", "ex": "The cat leapt onto the table.", "note": "*", "si": 2}, {"n": 45, "g": "ABB", "sub": "③ 长元音 /iː/ 变短元音 /e/，再加 -t 或 -d", "b": "leave", "p": "left", "pp": "left", "ib": "liːv", "ip": "left", "ipp": "left", "cn": "v. 离开；留下", "ex": "He left home at seven.", "note": "", "si": 2}, {"n": 46, "g": "ABB", "sub": "③ 长元音 /iː/ 变短元音 /e/，再加 -t 或 -d", "b": "meet", "p": "met", "pp": "met", "ib": "miːt", "ip": "met", "ipp": "met", "cn": "v. 遇见；会面", "ex": "We met at the station.", "note": "", "si": 2}, {"n": 47, "g": "ABB", "sub": "③ 长元音 /iː/ 变短元音 /e/，再加 -t 或 -d", "b": "feed", "p": "fed", "pp": "fed", "ib": "fiːd", "ip": "fed", "ipp": "fed", "cn": "v. 喂养", "ex": "Have you fed the dog?", "note": "", "si": 2}, {"n": 48, "g": "ABB", "sub": "③ 长元音 /iː/ 变短元音 /e/，再加 -t 或 -d", "b": "lead", "p": "led", "pp": "led", "ib": "liːd", "ip": "led", "ipp": "led", "cn": "v. 带领；导致", "ex": "The road led to a small village.", "note": "", "si": 2}, {"n": 49, "g": "ABB", "sub": "③ 长元音 /iː/ 变短元音 /e/，再加 -t 或 -d", "b": "bleed", "p": "bled", "pp": "bled", "ib": "bliːd", "ip": "bled", "ipp": "bled", "cn": "v. 流血", "ex": "His nose bled badly.", "note": "", "si": 2}, {"n": 50, "g": "ABB", "sub": "③ 长元音 /iː/ 变短元音 /e/，再加 -t 或 -d", "b": "breed", "p": "bred", "pp": "bred", "ib": "briːd", "ip": "bred", "ipp": "bred", "cn": "v. 繁殖；饲养", "ex": "They bred horses on the farm.", "note": "", "si": 2}, {"n": 51, "g": "ABB", "sub": "③ 长元音 /iː/ 变短元音 /e/，再加 -t 或 -d", "b": "speed", "p": "sped", "pp": "sped", "ib": "spiːd", "ip": "sped", "ipp": "sped", "cn": "v. 疾驰；加速", "ex": "The car sped away.", "note": "*", "si": 2}, {"n": 52, "g": "ABB", "sub": "③ 长元音 /iː/ 变短元音 /e/，再加 -t 或 -d", "b": "flee", "p": "fled", "pp": "fled", "ib": "fliː", "ip": "fled", "ipp": "fled", "cn": "v. 逃跑", "ex": "They fled the burning house.", "note": "", "si": 2}, {"n": 53, "g": "ABB", "sub": "④ 词尾直接加 -t（英式常用，美式多用规则 -ed）", "b": "burn", "p": "burnt", "pp": "burnt", "ib": "bɜːn", "ip": "bɜːnt", "ipp": "bɜːnt", "cn": "v. 燃烧；烧伤", "ex": "He burnt his hand on the stove.", "note": "*", "si": 3}, {"n": 54, "g": "ABB", "sub": "④ 词尾直接加 -t（英式常用，美式多用规则 -ed）", "b": "learn", "p": "learnt", "pp": "learnt", "ib": "lɜːn", "ip": "lɜːnt", "ipp": "lɜːnt", "cn": "v. 学习", "ex": "I learnt a lot from him.", "note": "*", "si": 3}, {"n": 55, "g": "ABB", "sub": "④ 词尾直接加 -t（英式常用，美式多用规则 -ed）", "b": "smell", "p": "smelt", "pp": "smelt", "ib": "smel", "ip": "smelt", "ipp": "smelt", "cn": "v. 闻；有…气味", "ex": "The soup smelt good.", "note": "*", "si": 3}, {"n": 56, "g": "ABB", "sub": "④ 词尾直接加 -t（英式常用，美式多用规则 -ed）", "b": "spell", "p": "spelt", "pp": "spelt", "ib": "spel", "ip": "spelt", "ipp": "spelt", "cn": "v. 拼写", "ex": "You've spelt my name wrong.", "note": "*", "si": 3}, {"n": 57, "g": "ABB", "sub": "④ 词尾直接加 -t（英式常用，美式多用规则 -ed）", "b": "spill", "p": "spilt", "pp": "spilt", "ib": "spɪl", "ip": "spɪlt", "ipp": "spɪlt", "cn": "v. 溢出，洒出", "ex": "She spilt milk on the table.", "note": "*", "si": 3}, {"n": 58, "g": "ABB", "sub": "④ 词尾直接加 -t（英式常用，美式多用规则 -ed）", "b": "spoil", "p": "spoilt", "pp": "spoilt", "ib": "spɔɪl", "ip": "spɔɪlt", "ipp": "spɔɪlt", "cn": "v. 宠坏；破坏", "ex": "The rain spoilt our picnic.", "note": "*", "si": 3}, {"n": 59, "g": "ABB", "sub": "⑤ -ay 变 -aid", "b": "say", "p": "said", "pp": "said", "ib": "seɪ", "ip": "sed", "ipp": "sed", "cn": "v. 说", "ex": "She said nothing about it.", "note": "said 读 /sed/，不读 /seɪd/", "si": 4}, {"n": 60, "g": "ABB", "sub": "⑤ -ay 变 -aid", "b": "pay", "p": "paid", "pp": "paid", "ib": "peɪ", "ip": "peɪd", "ipp": "peɪd", "cn": "v. 付钱", "ex": "I paid 20 yuan for the book.", "note": "", "si": 4}, {"n": 61, "g": "ABB", "sub": "⑤ -ay 变 -aid", "b": "lay", "p": "laid", "pp": "laid", "ib": "leɪ", "ip": "leɪd", "ipp": "leɪd", "cn": "v. 放置；下（蛋）", "ex": "The hen laid an egg.", "note": "", "si": 4}, {"n": 62, "g": "ABB", "sub": "⑥ 元音变 u /ʌ/", "b": "dig", "p": "dug", "pp": "dug", "ib": "dɪɡ", "ip": "dʌɡ", "ipp": "dʌɡ", "cn": "v. 挖", "ex": "They dug a deep hole.", "note": "", "si": 5}, {"n": 63, "g": "ABB", "sub": "⑥ 元音变 u /ʌ/", "b": "stick", "p": "stuck", "pp": "stuck", "ib": "stɪk", "ip": "stʌk", "ipp": "stʌk", "cn": "v. 粘贴；卡住", "ex": "The car got stuck in the mud.", "note": "", "si": 5}, {"n": 64, "g": "ABB", "sub": "⑥ 元音变 u /ʌ/", "b": "hang", "p": "hung", "pp": "hung", "ib": "hæŋ", "ip": "hʌŋ", "ipp": "hʌŋ", "cn": "v. 悬挂", "ex": "She hung the picture on the wall.", "note": "“绞死”用 hanged", "si": 5}, {"n": 65, "g": "ABB", "sub": "⑥ 元音变 u /ʌ/", "b": "swing", "p": "swung", "pp": "swung", "ib": "swɪŋ", "ip": "swʌŋ", "ipp": "swʌŋ", "cn": "v. 摇摆", "ex": "The door swung open.", "note": "", "si": 5}, {"n": 66, "g": "ABB", "sub": "⑥ 元音变 u /ʌ/", "b": "spin", "p": "spun", "pp": "spun", "ib": "spɪn", "ip": "spʌn", "ipp": "spʌn", "cn": "v. 旋转；纺", "ex": "The wheel spun fast.", "note": "", "si": 5}, {"n": 67, "g": "ABB", "sub": "⑥ 元音变 u /ʌ/", "b": "strike", "p": "struck", "pp": "struck", "ib": "straɪk", "ip": "strʌk", "ipp": "strʌk", "cn": "v. 打击；（钟）敲响", "ex": "The clock struck twelve.", "note": "", "si": 5}, {"n": 68, "g": "ABB", "sub": "⑦ -ind 变 -ound", "b": "find", "p": "found", "pp": "found", "ib": "faɪnd", "ip": "faʊnd", "ipp": "faʊnd", "cn": "v. 找到；发现", "ex": "I found my keys under the bed.", "note": "", "si": 6}, {"n": 69, "g": "ABB", "sub": "⑦ -ind 变 -ound", "b": "bind", "p": "bound", "pp": "bound", "ib": "baɪnd", "ip": "baʊnd", "ipp": "baʊnd", "cn": "v. 捆绑", "ex": "They bound his hands with rope.", "note": "", "si": 6}, {"n": 70, "g": "ABB", "sub": "⑧ -ell 变 -old", "b": "sell", "p": "sold", "pp": "sold", "ib": "sel", "ip": "səʊld", "ipp": "səʊld", "cn": "v. 卖", "ex": "He sold his old car.", "note": "", "si": 7}, {"n": 71, "g": "ABB", "sub": "⑧ -ell 变 -old", "b": "tell", "p": "told", "pp": "told", "ib": "tel", "ip": "təʊld", "ipp": "təʊld", "cn": "v. 告诉；讲述", "ex": "She told me a story.", "note": "", "si": 7}, {"n": 72, "g": "ABB", "sub": "⑨ i 变 a /æ/", "b": "sit", "p": "sat", "pp": "sat", "ib": "sɪt", "ip": "sæt", "ipp": "sæt", "cn": "v. 坐", "ex": "We sat by the window.", "note": "", "si": 8}, {"n": 73, "g": "ABB", "sub": "⑩ -and 变 -ood", "b": "stand", "p": "stood", "pp": "stood", "ib": "stænd", "ip": "stʊd", "ipp": "stʊd", "cn": "v. 站立；忍受", "ex": "He stood at the door.", "note": "", "si": 9}, {"n": 74, "g": "ABB", "sub": "⑩ -and 变 -ood", "b": "understand", "p": "understood", "pp": "understood", "ib": "ˌʌndəˈstænd", "ip": "ˌʌndəˈstʊd", "ipp": "ˌʌndəˈstʊd", "cn": "v. 理解，明白", "ex": "I understood every word.", "note": "", "si": 9}, {"n": 75, "g": "ABB", "sub": "⑪ 其他高频（无固定规律，重点记）", "b": "have", "p": "had", "pp": "had", "ib": "hæv", "ip": "hæd", "ipp": "hæd", "cn": "v. 有；吃；进行", "ex": "We had a good time.", "note": "", "si": 10}, {"n": 76, "g": "ABB", "sub": "⑪ 其他高频（无固定规律，重点记）", "b": "make", "p": "made", "pp": "made", "ib": "meɪk", "ip": "meɪd", "ipp": "meɪd", "cn": "v. 做；制造；使", "ex": "The table is made of wood.", "note": "", "si": 10}, {"n": 77, "g": "ABB", "sub": "⑪ 其他高频（无固定规律，重点记）", "b": "hear", "p": "heard", "pp": "heard", "ib": "hɪə", "ip": "hɜːd", "ipp": "hɜːd", "cn": "v. 听见", "ex": "I heard a strange noise.", "note": "heard 读 /hɜːd/", "si": 10}, {"n": 78, "g": "ABB", "sub": "⑪ 其他高频（无固定规律，重点记）", "b": "hold", "p": "held", "pp": "held", "ib": "həʊld", "ip": "held", "ipp": "held", "cn": "v. 握住；举行", "ex": "The meeting was held yesterday.", "note": "", "si": 10}, {"n": 79, "g": "ABB", "sub": "⑪ 其他高频（无固定规律，重点记）", "b": "win", "p": "won", "pp": "won", "ib": "wɪn", "ip": "wʌn", "ipp": "wʌn", "cn": "v. 赢得", "ex": "Our team won the game.", "note": "", "si": 10}, {"n": 80, "g": "ABB", "sub": "⑪ 其他高频（无固定规律，重点记）", "b": "lose", "p": "lost", "pp": "lost", "ib": "luːz", "ip": "lɒst", "ipp": "lɒst", "cn": "v. 丢失；输", "ex": "I lost my wallet on the bus.", "note": "", "si": 10}, {"n": 81, "g": "ABB", "sub": "⑪ 其他高频（无固定规律，重点记）", "b": "shoot", "p": "shot", "pp": "shot", "ib": "ʃuːt", "ip": "ʃɒt", "ipp": "ʃɒt", "cn": "v. 射击；拍摄", "ex": "The film was shot in Beijing.", "note": "", "si": 10}, {"n": 82, "g": "ABB", "sub": "⑪ 其他高频（无固定规律，重点记）", "b": "shine", "p": "shone", "pp": "shone", "ib": "ʃaɪn", "ip": "ʃɒn", "ipp": "ʃɒn", "cn": "v. 照耀", "ex": "The sun shone brightly.", "note": "“擦亮”用 shined", "si": 10}, {"n": 83, "g": "ABB", "sub": "⑪ 其他高频（无固定规律，重点记）", "b": "light", "p": "lit", "pp": "lit", "ib": "laɪt", "ip": "lɪt", "ipp": "lɪt", "cn": "v. 点燃；照亮", "ex": "She lit a candle.", "note": "*", "si": 10}, {"n": 84, "g": "ABB", "sub": "⑪ 其他高频（无固定规律，重点记）", "b": "slide", "p": "slid", "pp": "slid", "ib": "slaɪd", "ip": "slɪd", "ipp": "slɪd", "cn": "v. 滑动", "ex": "The book slid off the table.", "note": "", "si": 10}, {"n": 85, "g": "ABB", "sub": "⑪ 其他高频（无固定规律，重点记）", "b": "get", "p": "got", "pp": "got", "ib": "ɡet", "ip": "ɡɒt", "ipp": "ɡɒt", "cn": "v. 得到；变得", "ex": "I got a letter today.", "note": "美式过去分词常用 gotten", "si": 10}, {"n": 86, "g": "ABA", "sub": "", "b": "come", "p": "came", "pp": "come", "ib": "kʌm", "ip": "keɪm", "ipp": "kʌm", "cn": "v. 来", "ex": "Spring has come.", "note": "", "si": 0}, {"n": 87, "g": "ABA", "sub": "", "b": "become", "p": "became", "pp": "become", "ib": "bɪˈkʌm", "ip": "bɪˈkeɪm", "ipp": "bɪˈkʌm", "cn": "v. 变成，成为", "ex": "She became a doctor.", "note": "", "si": 0}, {"n": 88, "g": "ABA", "sub": "", "b": "overcome", "p": "overcame", "pp": "overcome", "ib": "ˌəʊvəˈkʌm", "ip": "ˌəʊvəˈkeɪm", "ipp": "ˌəʊvəˈkʌm", "cn": "v. 克服", "ex": "He overcame many difficulties.", "note": "", "si": 0}, {"n": 89, "g": "ABA", "sub": "", "b": "run", "p": "ran", "pp": "run", "ib": "rʌn", "ip": "ræn", "ipp": "rʌn", "cn": "v. 跑；经营", "ex": "I have run five kilometres.", "note": "", "si": 0}, {"n": 90, "g": "AAB", "sub": "", "b": "beat", "p": "beat", "pp": "beaten", "ib": "biːt", "ip": "biːt", "ipp": "ˈbiːtn", "cn": "v. 打；打败；（心）跳", "ex": "Our team was beaten 3–1.", "note": "", "si": 0}, {"n": 91, "g": "ABC", "sub": "① i → a → u", "b": "begin", "p": "began", "pp": "begun", "ib": "bɪˈɡɪn", "ip": "bɪˈɡæn", "ipp": "bɪˈɡʌn", "cn": "v. 开始", "ex": "The film has already begun.", "note": "", "si": 0}, {"n": 92, "g": "ABC", "sub": "① i → a → u", "b": "drink", "p": "drank", "pp": "drunk", "ib": "drɪŋk", "ip": "dræŋk", "ipp": "drʌŋk", "cn": "v. 喝", "ex": "He has drunk too much coffee.", "note": "", "si": 0}, {"n": 93, "g": "ABC", "sub": "① i → a → u", "b": "ring", "p": "rang", "pp": "rung", "ib": "rɪŋ", "ip": "ræŋ", "ipp": "rʌŋ", "cn": "v. （铃）响；打电话", "ex": "The phone rang twice.", "note": "", "si": 0}, {"n": 94, "g": "ABC", "sub": "① i → a → u", "b": "sing", "p": "sang", "pp": "sung", "ib": "sɪŋ", "ip": "sæŋ", "ipp": "sʌŋ", "cn": "v. 唱", "ex": "She sang a beautiful song.", "note": "", "si": 0}, {"n": 95, "g": "ABC", "sub": "① i → a → u", "b": "sink", "p": "sank", "pp": "sunk", "ib": "sɪŋk", "ip": "sæŋk", "ipp": "sʌŋk", "cn": "v. 下沉", "ex": "The ship sank in the storm.", "note": "", "si": 0}, {"n": 96, "g": "ABC", "sub": "① i → a → u", "b": "swim", "p": "swam", "pp": "swum", "ib": "swɪm", "ip": "swæm", "ipp": "swʌm", "cn": "v. 游泳", "ex": "I have never swum in the sea.", "note": "", "si": 0}, {"n": 97, "g": "ABC", "sub": "① i → a → u", "b": "shrink", "p": "shrank", "pp": "shrunk", "ib": "ʃrɪŋk", "ip": "ʃræŋk", "ipp": "ʃrʌŋk", "cn": "v. 收缩；缩水", "ex": "My shirt shrank in the wash.", "note": "", "si": 0}, {"n": 98, "g": "ABC", "sub": "① i → a → u", "b": "spring", "p": "sprang", "pp": "sprung", "ib": "sprɪŋ", "ip": "spræŋ", "ipp": "sprʌŋ", "cn": "v. 跳；涌现", "ex": "He sprang to his feet.", "note": "", "si": 0}, {"n": 99, "g": "ABC", "sub": "② -ow / -aw / -y → -ew → -own / -awn", "b": "blow", "p": "blew", "pp": "blown", "ib": "bləʊ", "ip": "bluː", "ipp": "bləʊn", "cn": "v. 吹", "ex": "The wind blew hard all night.", "note": "", "si": 1}, {"n": 100, "g": "ABC", "sub": "② -ow / -aw / -y → -ew → -own / -awn", "b": "grow", "p": "grew", "pp": "grown", "ib": "ɡrəʊ", "ip": "ɡruː", "ipp": "ɡrəʊn", "cn": "v. 生长；种植", "ex": "The children have grown up.", "note": "", "si": 1}, {"n": 101, "g": "ABC", "sub": "② -ow / -aw / -y → -ew → -own / -awn", "b": "know", "p": "knew", "pp": "known", "ib": "nəʊ", "ip": "njuː", "ipp": "nəʊn", "cn": "v. 知道；认识", "ex": "I have known him for years.", "note": "", "si": 1}, {"n": 102, "g": "ABC", "sub": "② -ow / -aw / -y → -ew → -own / -awn", "b": "throw", "p": "threw", "pp": "thrown", "ib": "θrəʊ", "ip": "θruː", "ipp": "θrəʊn", "cn": "v. 扔，投", "ex": "He threw the ball to me.", "note": "", "si": 1}, {"n": 103, "g": "ABC", "sub": "② -ow / -aw / -y → -ew → -own / -awn", "b": "fly", "p": "flew", "pp": "flown", "ib": "flaɪ", "ip": "fluː", "ipp": "fləʊn", "cn": "v. 飞；放（风筝）", "ex": "We flew to Shanghai last week.", "note": "", "si": 1}, {"n": 104, "g": "ABC", "sub": "② -ow / -aw / -y → -ew → -own / -awn", "b": "draw", "p": "drew", "pp": "drawn", "ib": "drɔː", "ip": "druː", "ipp": "drɔːn", "cn": "v. 画；拉；吸引", "ex": "She drew a cat on the wall.", "note": "", "si": 1}, {"n": 105, "g": "ABC", "sub": "② -ow / -aw / -y → -ew → -own / -awn", "b": "withdraw", "p": "withdrew", "pp": "withdrawn", "ib": "wɪðˈdrɔː", "ip": "wɪðˈdruː", "ipp": "wɪðˈdrɔːn", "cn": "v. 撤回；取（钱）", "ex": "He withdrew 500 yuan from the bank.", "note": "", "si": 1}, {"n": 106, "g": "ABC", "sub": "③ 过去式 -owed，过去分词 -own", "b": "show", "p": "showed", "pp": "shown", "ib": "ʃəʊ", "ip": "ʃəʊd", "ipp": "ʃəʊn", "cn": "v. 展示；给…看", "ex": "He has shown me his photos.", "note": "过去分词也可用 showed", "si": 2}, {"n": 107, "g": "ABC", "sub": "③ 过去式 -owed，过去分词 -own", "b": "sow", "p": "sowed", "pp": "sown", "ib": "səʊ", "ip": "səʊd", "ipp": "səʊn", "cn": "v. 播种", "ex": "The farmers have sown the seeds.", "note": "*", "si": 2}, {"n": 108, "g": "ABC", "sub": "④ 过去式含 o，过去分词 = 过去式 + (e)n", "b": "break", "p": "broke", "pp": "broken", "ib": "breɪk", "ip": "brəʊk", "ipp": "ˈbrəʊkən", "cn": "v. 打破；违反", "ex": "Who broke the window?", "note": "", "si": 3}, {"n": 109, "g": "ABC", "sub": "④ 过去式含 o，过去分词 = 过去式 + (e)n", "b": "choose", "p": "chose", "pp": "chosen", "ib": "tʃuːz", "ip": "tʃəʊz", "ipp": "ˈtʃəʊzn", "cn": "v. 选择", "ex": "She was chosen as monitor.", "note": "", "si": 3}, {"n": 110, "g": "ABC", "sub": "④ 过去式含 o，过去分词 = 过去式 + (e)n", "b": "speak", "p": "spoke", "pp": "spoken", "ib": "spiːk", "ip": "spəʊk", "ipp": "ˈspəʊkən", "cn": "v. 说（语言）；讲话", "ex": "English is spoken all over the world.", "note": "", "si": 3}, {"n": 111, "g": "ABC", "sub": "④ 过去式含 o，过去分词 = 过去式 + (e)n", "b": "steal", "p": "stole", "pp": "stolen", "ib": "stiːl", "ip": "stəʊl", "ipp": "ˈstəʊlən", "cn": "v. 偷", "ex": "My bike was stolen last night.", "note": "", "si": 3}, {"n": 112, "g": "ABC", "sub": "④ 过去式含 o，过去分词 = 过去式 + (e)n", "b": "wake", "p": "woke", "pp": "woken", "ib": "weɪk", "ip": "wəʊk", "ipp": "ˈwəʊkən", "cn": "v. 醒；叫醒", "ex": "I woke up at six.", "note": "", "si": 3}, {"n": 113, "g": "ABC", "sub": "④ 过去式含 o，过去分词 = 过去式 + (e)n", "b": "awake", "p": "awoke", "pp": "awoken", "ib": "əˈweɪk", "ip": "əˈwəʊk", "ipp": "əˈwəʊkən", "cn": "v. 醒来；唤醒", "ex": "She awoke to the sound of rain.", "note": "", "si": 3}, {"n": 114, "g": "ABC", "sub": "④ 过去式含 o，过去分词 = 过去式 + (e)n", "b": "freeze", "p": "froze", "pp": "frozen", "ib": "friːz", "ip": "frəʊz", "ipp": "ˈfrəʊzn", "cn": "v. 结冰；冻结", "ex": "The lake froze last night.", "note": "", "si": 3}, {"n": 115, "g": "ABC", "sub": "④ 过去式含 o，过去分词 = 过去式 + (e)n", "b": "forget", "p": "forgot", "pp": "forgotten", "ib": "fəˈɡet", "ip": "fəˈɡɒt", "ipp": "fəˈɡɒtn", "cn": "v. 忘记", "ex": "I have forgotten his name.", "note": "", "si": 3}, {"n": 116, "g": "ABC", "sub": "⑤ i → o → i + (d/t)en", "b": "drive", "p": "drove", "pp": "driven", "ib": "draɪv", "ip": "drəʊv", "ipp": "ˈdrɪvn", "cn": "v. 驾驶；驱赶", "ex": "He drove me home.", "note": "", "si": 4}, {"n": 117, "g": "ABC", "sub": "⑤ i → o → i + (d/t)en", "b": "ride", "p": "rode", "pp": "ridden", "ib": "raɪd", "ip": "rəʊd", "ipp": "ˈrɪdn", "cn": "v. 骑", "ex": "Have you ever ridden a horse?", "note": "", "si": 4}, {"n": 118, "g": "ABC", "sub": "⑤ i → o → i + (d/t)en", "b": "rise", "p": "rose", "pp": "risen", "ib": "raɪz", "ip": "rəʊz", "ipp": "ˈrɪzn", "cn": "v. 上升；升起", "ex": "The sun has risen.", "note": "", "si": 4}, {"n": 119, "g": "ABC", "sub": "⑤ i → o → i + (d/t)en", "b": "arise", "p": "arose", "pp": "arisen", "ib": "əˈraɪz", "ip": "əˈrəʊz", "ipp": "əˈrɪzn", "cn": "v. 出现，产生", "ex": "A new problem arose.", "note": "", "si": 4}, {"n": 120, "g": "ABC", "sub": "⑤ i → o → i + (d/t)en", "b": "write", "p": "wrote", "pp": "written", "ib": "raɪt", "ip": "rəʊt", "ipp": "ˈrɪtn", "cn": "v. 写", "ex": "The story was written by Lu Xun.", "note": "", "si": 4}, {"n": 121, "g": "ABC", "sub": "⑤ i → o → i + (d/t)en", "b": "strive", "p": "strove", "pp": "striven", "ib": "straɪv", "ip": "strəʊv", "ipp": "ˈstrɪvn", "cn": "v. 努力，奋斗", "ex": "He strove for success.", "note": "", "si": 4}, {"n": 122, "g": "ABC", "sub": "⑥ -ear → -ore → -orn", "b": "wear", "p": "wore", "pp": "worn", "ib": "weə", "ip": "wɔː", "ipp": "wɔːn", "cn": "v. 穿；戴；磨损", "ex": "She wore a red dress.", "note": "", "si": 5}, {"n": 123, "g": "ABC", "sub": "⑥ -ear → -ore → -orn", "b": "tear", "p": "tore", "pp": "torn", "ib": "teə", "ip": "tɔː", "ipp": "tɔːn", "cn": "v. 撕", "ex": "He tore the letter into pieces.", "note": "", "si": 5}, {"n": 124, "g": "ABC", "sub": "⑥ -ear → -ore → -orn", "b": "swear", "p": "swore", "pp": "sworn", "ib": "sweə", "ip": "swɔː", "ipp": "swɔːn", "cn": "v. 发誓；咒骂", "ex": "He swore to tell the truth.", "note": "", "si": 5}, {"n": 125, "g": "ABC", "sub": "⑥ -ear → -ore → -orn", "b": "bear", "p": "bore", "pp": "borne", "ib": "beə", "ip": "bɔː", "ipp": "bɔːn", "cn": "v. 忍受；承担；生育", "ex": "I can't bear the noise.", "note": "“出生”用 be born", "si": 5}, {"n": 126, "g": "ABC", "sub": "⑦ -ake → -ook → -aken", "b": "take", "p": "took", "pp": "taken", "ib": "teɪk", "ip": "tʊk", "ipp": "ˈteɪkən", "cn": "v. 拿；带走；花费", "ex": "It took me an hour to finish.", "note": "", "si": 6}, {"n": 127, "g": "ABC", "sub": "⑦ -ake → -ook → -aken", "b": "shake", "p": "shook", "pp": "shaken", "ib": "ʃeɪk", "ip": "ʃʊk", "ipp": "ˈʃeɪkən", "cn": "v. 摇动；握（手）", "ex": "They shook hands.", "note": "", "si": 6}, {"n": 128, "g": "ABC", "sub": "⑦ -ake → -ook → -aken", "b": "mistake", "p": "mistook", "pp": "mistaken", "ib": "mɪˈsteɪk", "ip": "mɪˈstʊk", "ipp": "mɪˈsteɪkən", "cn": "v. 弄错；误认", "ex": "I mistook him for his brother.", "note": "", "si": 6}, {"n": 129, "g": "ABC", "sub": "⑦ -ake → -ook → -aken", "b": "undertake", "p": "undertook", "pp": "undertaken", "ib": "ˌʌndəˈteɪk", "ip": "ˌʌndəˈtʊk", "ipp": "ˌʌndəˈteɪkən", "cn": "v. 承担；着手做", "ex": "She undertook the task.", "note": "", "si": 6}, {"n": 130, "g": "ABC", "sub": "⑧ i → a → i + en", "b": "give", "p": "gave", "pp": "given", "ib": "ɡɪv", "ip": "ɡeɪv", "ipp": "ˈɡɪvn", "cn": "v. 给", "ex": "He gave me a gift.", "note": "", "si": 7}, {"n": 131, "g": "ABC", "sub": "⑧ i → a → i + en", "b": "forgive", "p": "forgave", "pp": "forgiven", "ib": "fəˈɡɪv", "ip": "fəˈɡeɪv", "ipp": "fəˈɡɪvn", "cn": "v. 原谅", "ex": "She has forgiven him.", "note": "", "si": 7}, {"n": 132, "g": "ABC", "sub": "⑧ i → a → i + en", "b": "forbid", "p": "forbade", "pp": "forbidden", "ib": "fəˈbɪd", "ip": "fəˈbæd", "ipp": "fəˈbɪdn", "cn": "v. 禁止", "ex": "Smoking is forbidden here.", "note": "", "si": 7}, {"n": 133, "g": "ABC", "sub": "⑨ 原形 / 过去式 + (e)n", "b": "eat", "p": "ate", "pp": "eaten", "ib": "iːt", "ip": "et", "ipp": "ˈiːtn", "cn": "v. 吃", "ex": "Have you eaten yet?", "note": "ate 英式读 /et/，美式读 /eɪt/", "si": 8}, {"n": 134, "g": "ABC", "sub": "⑨ 原形 / 过去式 + (e)n", "b": "fall", "p": "fell", "pp": "fallen", "ib": "fɔːl", "ip": "fel", "ipp": "ˈfɔːlən", "cn": "v. 落下；跌倒", "ex": "Many leaves have fallen.", "note": "", "si": 8}, {"n": 135, "g": "ABC", "sub": "⑨ 原形 / 过去式 + (e)n", "b": "see", "p": "saw", "pp": "seen", "ib": "siː", "ip": "sɔː", "ipp": "siːn", "cn": "v. 看见", "ex": "I saw him yesterday.", "note": "", "si": 8}, {"n": 136, "g": "ABC", "sub": "⑨ 原形 / 过去式 + (e)n", "b": "hide", "p": "hid", "pp": "hidden", "ib": "haɪd", "ip": "hɪd", "ipp": "ˈhɪdn", "cn": "v. 躲藏；隐藏", "ex": "He hid behind the door.", "note": "", "si": 8}, {"n": 137, "g": "ABC", "sub": "⑨ 原形 / 过去式 + (e)n", "b": "bite", "p": "bit", "pp": "bitten", "ib": "baɪt", "ip": "bɪt", "ipp": "ˈbɪtn", "cn": "v. 咬", "ex": "The dog bit him on the leg.", "note": "", "si": 8}, {"n": 138, "g": "ABC", "sub": "⑨ 原形 / 过去式 + (e)n", "b": "lie", "p": "lay", "pp": "lain", "ib": "laɪ", "ip": "leɪ", "ipp": "leɪn", "cn": "v. 躺；位于", "ex": "He lay on the grass.", "note": "“说谎”是 lie–lied–lied", "si": 8}, {"n": 139, "g": "ABC", "sub": "⑩ 完全不规则（必须死记）", "b": "be", "p": "was / were", "pp": "been", "ib": "biː", "ip": "wɒz / wɜː", "ipp": "biːn", "cn": "v. 是；在", "ex": "I have been to Beijing twice.", "note": "was 用于 I / he / she / it", "si": 9}, {"n": 140, "g": "ABC", "sub": "⑩ 完全不规则（必须死记）", "b": "do", "p": "did", "pp": "done", "ib": "duː", "ip": "dɪd", "ipp": "dʌn", "cn": "v. 做", "ex": "Have you done your homework?", "note": "", "si": 9}, {"n": 141, "g": "ABC", "sub": "⑩ 完全不规则（必须死记）", "b": "go", "p": "went", "pp": "gone", "ib": "ɡəʊ", "ip": "went", "ipp": "ɡɒn", "cn": "v. 去", "ex": "He has gone to Shanghai.", "note": "", "si": 9}], "traps": [["lie", "lay", "lain", "躺；位于", "lie", "lied", "lied", "说谎"], ["lay", "laid", "laid", "放置；下（蛋）", "lie", "lay", "lain", "躺（过去式也是 lay）"], ["hang", "hung", "hung", "悬挂", "hang", "hanged", "hanged", "绞死"], ["find", "found", "found", "找到", "found", "founded", "founded", "建立，创办"], ["rise", "rose", "risen", "上升（不及物）", "raise", "raised", "raised", "举起；提高（及物）"], ["fly", "flew", "flown", "飞", "flow", "flowed", "flowed", "流动"], ["bear", "bore", "borne", "忍受；承担", "be born", "—", "—", "出生（只用被动）"]], "groups": [{"id": "AAA", "code": "A · A · A", "name": "三形相同"}, {"id": "ABB", "code": "A · B · B", "name": "过去式 = 过去分词"}, {"id": "ABA", "code": "A · B · A", "name": "过去分词 = 原形"}, {"id": "AAB", "code": "A · A · B", "name": "过去式 = 原形"}, {"id": "ABC", "code": "A · B · C", "name": "三形各不相同"}]};
+const ROWS=D.rows, TRAPS=D.traps, GROUPS=D.groups;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const cnOf=r=>r.cn.replace(/^v\.\s*/,'');
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const pick=a=>a[Math.random()*a.length|0];
+
+const STATIONS=[
+ {id:'s1',name:'原地站',code:'A·A·A',desc:'三形相同，一动不动：cut – cut – cut',pick:r=>r.g==='AAA'},
+ {id:'s2',name:'双子站 · 上',code:'A·B·B',desc:'过去式 = 过去分词：-ought 家族、-d 变 -t、长元音变短…',pick:r=>r.g==='ABB'&&r.si<=4},
+ {id:'s3',name:'双子站 · 下',code:'A·B·B',desc:'变 u、-ind 变 -ound、-ell 变 -old 和其他高频词',pick:r=>r.g==='ABB'&&r.si>=5},
+ {id:'s4',name:'回旋站',code:'A·B·A / A·A·B',desc:'绕一圈回到原形：come – came – come，还有孤单的 beat',pick:r=>r.g==='ABA'||r.g==='AAB'},
+ {id:'s5',name:'三岔站 · 上',code:'A·B·C',desc:'i → a → u、-ew → -own、过去式 o + (e)n',pick:r=>r.g==='ABC'&&r.si<=3},
+ {id:'s6',name:'三岔站 · 下',code:'A·B·C',desc:'i → o → en、-ear、-ake，还有 be / do / go',pick:r=>r.g==='ABC'&&r.si>=4},
+ {id:'boss',name:'迷雾终点站',code:'BOSS',desc:'易混词陷阱：lie / lay、find / found、rise / raise…',boss:true}
+];
+/* 每站按原有顺序（同一变形规律放一起）切成每节不超过 12 词的车厢，保证每个词都会被考到 */
+STATIONS.forEach(s=>{
+  if(s.boss){s.cars=[null];return}
+  s.words=ROWS.filter(s.pick);
+  const k=Math.ceil(s.words.length/12),base=Math.floor(s.words.length/k),extra=s.words.length%k;
+  s.cars=[];let at=0;for(let c=0;c<k;c++){const n=base+(c<extra?1:0);s.cars.push(s.words.slice(at,at+n));at+=n}
+});
+const TOTAL_CARS=STATIONS.reduce((a,s)=>a+s.cars.length,0);
+const MAX_STARS=STATIONS.reduce((a,s)=>a+(s.cars.length+(s.boss?0:1))*3,0);
+
+/* 词义近义组：同组的词互相做干扰项（意思相关但不同义） */
+const CLUSTERS=[
+ 'hit beat strike fight bet break cut bite sting hurt bleed',
+ 'put set lay cast throw fling thrust spread shed upset',
+ 'say speak tell swear broadcast forecast',
+ 'see show seek find hide mistake',
+ 'bring take catch hold lead send give lend draw withdraw',
+ 'buy sell pay cost spend bid deal win lose',
+ 'leap spring fly run flee ride drive speed slide swing spin',
+ 'weep burst sing ring blow shake',
+ 'write draw spell read learn teach',
+ 'eat drink feed breed grow sow',
+ 'sleep lie sit stand kneel lean creep',
+ 'think know understand mean dream forget forgive',
+ 'become get grow rise arise wake awake begin',
+ 'fall sink slide shed shrink',
+ 'tear break burst split dig grind',
+ 'shut let forbid quit rid',
+ 'build make weave sew bind wind',
+ 'smell hear feel stink',
+ 'freeze burn shine light spoil spill',
+ 'wear bear overcome undertake strive meet'
+].map(s=>new Set(s.split(' ')));
+const RANKS=[[0,'见习乘客'],[150,'检票员'],[400,'列车员'],[800,'副司机'],[1400,'司机'],[2200,'时光旅人'],[3500,'时间领主']];
+const PRAISE=['答对了！','漂亮！','完美！','太稳了！','时光机加速！','一次就对！'];
+
+/* ---------- saved progress (this device only) ---------- */
+const KEY='verb-timemachine-v1';
+const FRESH=()=>({xp:0,stars:{},best:0,wrong:{},mastery:{},muted:false,unlock:false,
+  coins:0,streak:{last:'',days:0},today:{date:'',xp:0,done:false},ach:{},skin:'default',owned:['default'],
+  items:{hint:0,shield:0,xp2:0,time:0},equip:{deco:'none',title:'none',sfx:'classic',fx:'confetti',bg:'dots'},
+  stats:{rounds:0,maxCombo:0,revives:0}});
+let S=FRESH();
+try{Object.assign(S,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
+S.mastery=S.mastery||{};
+{const valid=new Set(ROWS.map(r=>r.b));for(const o of [S.mastery,S.wrong])for(const k of Object.keys(o))if(!valid.has(k))delete o[k]}  // 旧版按编号存的记录作废
+for(const k of Object.keys(S.stars))if(!k.includes(':'))delete S.stars[k];  // 旧版按站计星，改为按车厢
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+{const f=FRESH();for(const k of ['streak','today','stats','items','equip'])S[k]=Object.assign(f[k],S[k]||{})}
+
+/* ---------- daily goal, streak, coins ---------- */
+const GOAL=100;
+const dstr=d=>`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+const todayStr=()=>dstr(new Date());
+const yestStr=()=>{const d=new Date();d.setDate(d.getDate()-1);return dstr(d)};
+function dayState(){if(S.today.date!==todayStr())S.today={date:todayStr(),xp:0,done:false};return S.today}
+const streakNow=()=>[todayStr(),yestStr()].includes(S.streak.last)?S.streak.days:0;
+function addXP(x){
+  S.xp+=x;const t=dayState();t.xp+=x;
+  if(!t.done&&t.xp>=GOAL){t.done=true;
+    S.streak.days=S.streak.last===yestStr()?S.streak.days+1:S.streak.last===todayStr()?S.streak.days:1;S.streak.last=todayStr();
+    later(()=>{toast('今日目标完成！',`已连续打卡 ${S.streak.days} 天，奖励 30 时光币`,'flame');SFX.coin()});S.coins+=30}
+}
+
+/* ---------- toasts ---------- */
+const toastQ=[];let toastBusy=false;
+function later(f){toastQ.push(f);if(!toastBusy)runToasts()}
+function runToasts(){const f=toastQ.shift();if(!f){toastBusy=false;return}toastBusy=true;f();setTimeout(runToasts,1300)}
+function toast(title,sub,kind='ach'){
+  const el=document.createElement('div');el.className='toast t-'+kind;
+  el.innerHTML=`<span class="tico">${kind==='flame'?FLAME:MEDAL}</span><span><b>${esc(title)}</b><small>${esc(sub)}</small></span>`;
+  $('#toasts').appendChild(el);setTimeout(()=>el.classList.add('out'),3200);setTimeout(()=>el.remove(),3700);
+}
+const FLAME='<svg viewBox="0 0 24 24" width="22" height="22"><path style="fill:var(--sun)" d="M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-4-1-6 1-9z"/></svg>';
+const MEDAL='<svg viewBox="0 0 24 24" width="22" height="22"><path style="fill:var(--brand)" d="M7 2h4l1 5-3 1zM17 2h-4l-1 5 3 1z"/><circle cx="12" cy="15" r="6.5" style="fill:var(--gold)"/><path style="fill:var(--surface)" d="m12 11 1.2 2.5 2.7.3-2 1.9.5 2.7-2.4-1.3-2.4 1.3.5-2.7-2-1.9 2.7-.3z"/></svg>';
+
+/* ---------- achievements ---------- */
+const ACH=[
+ ['first','首次发车','完成第一轮闯关',()=>S.stats.rounds>=1],
+ ['star3','满星乘客','第一次拿到三颗星',()=>Object.values(S.stars).some(v=>v===3)],
+ ['c5','小火车头','一轮里连对 5 题',()=>S.stats.maxCombo>=5],
+ ['c10','高速列车','一轮里连对 10 题',()=>S.stats.maxCombo>=10],
+ ['c20','磁悬浮','一轮里连对 20 题',()=>S.stats.maxCombo>=20],
+ ['m10','初级旅人','掌握 10 个词',()=>mastered(ROWS)>=10],
+ ['m50','资深旅人','掌握 50 个词',()=>mastered(ROWS)>=50],
+ ['m100','百词斩','掌握 100 个词',()=>mastered(ROWS)>=100],
+ ['mAll','时间领主','掌握全部动词',()=>mastered(ROWS)>=ROWS.length],
+ ['gold','金色车厢','让一节车厢的词全部掌握',()=>STATIONS.some(s=>!s.boss&&s.cars.some(c=>mastered(c)===c.length))],
+ ['st1','第一站通关','通关原地站所有车厢',()=>cleared(0)],
+ ['boss','驱散迷雾','击败终点站 BOSS',()=>starOf(STATIONS.length-1,0)>0],
+ ['q15','快手','60 秒快答答对 15 个',()=>S.best>=15],
+ ['q25','闪电手','60 秒快答答对 25 个',()=>S.best>=25],
+ ['s3','三日不断','连续打卡 3 天',()=>S.streak.days>=3],
+ ['s7','一周全勤','连续打卡 7 天',()=>S.streak.days>=7],
+ ['rev','绝地复活','用时光币复活一次',()=>S.stats.revives>=1],
+ ['rich','小富翁','攒到 300 时光币',()=>S.coins>=300],
+ ['skin','换装达人','在小卖部买下第一件装扮',()=>S.owned.length>1],
+ ['shop5','收藏家','拥有 5 件装扮',()=>S.owned.length>=6]
+];
+function checkAch(){ACH.forEach(([id,name,desc,f])=>{if(!S.ach[id]&&f()){S.ach[id]=1;S.coins+=20;later(()=>{toast('成就解锁：'+name,desc+' · +20 时光币');SFX.ach()})}});save()}
+
+/* ---------- train paint shop ---------- */
+const SKINS=[
+ {id:'default',name:'经典紫',price:0,l:'#5a3cf2',d:'#8f7dff'},
+ {id:'sunset',name:'晚霞红',price:80,l:'#d23a2f',d:'#ff7c70'},
+ {id:'mint',name:'薄荷绿',price:120,l:'#0b8a63',d:'#3fd6a4'},
+ {id:'sakura',name:'樱花粉',price:160,l:'#c2367a',d:'#ff8cc4'},
+ {id:'ocean',name:'深海蓝',price:220,l:'#1d5bd0',d:'#6ea9ff'},
+ {id:'gilded',name:'鎏金特快',price:400,l:'#9a6400',d:'#ffc94a'}
+];
+function applySkin(){const k=SKINS.find(s=>s.id===S.skin)||SKINS[0];
+  $('#skinStyle').textContent=`:root{--brand:${k.l}}@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--brand:${k.d}}}:root[data-theme="dark"]{--brand:${k.d}}`}
+/* 列车：装饰画在车身上方（y<0）和车尾（x<0） */
+function trainSVG(deco){
+  const body='<rect x="1" y="2" width="27" height="13" rx="4" style="fill:var(--brand)"/><path d="M28 6h6a4 4 0 0 1 4 4v5H28z" style="fill:var(--brand)"/><rect x="5" y="5" width="6" height="5" rx="1.5" style="fill:var(--surface)"/><rect x="14" y="5" width="6" height="5" rx="1.5" style="fill:var(--surface)"/><rect x="30" y="8" width="4" height="4" rx="1" style="fill:var(--surface)"/><circle cx="8" cy="18" r="3" style="fill:var(--ink)"/><circle cx="21" cy="18" r="3" style="fill:var(--ink)"/><circle cx="33" cy="18" r="3" style="fill:var(--ink)"/>';
+  const extra={
+    flag:'<path d="M33 6V-8" style="stroke:var(--ink);stroke-width:1.4"/><path d="M33.5 -8l8 3-8 3z" style="fill:var(--bad)"/>',
+    smoke:'<rect x="30" y="1" width="4" height="6" rx="1" style="fill:var(--ink)"/><circle class="puff p1" cx="32" cy="-3" r="2.6" style="fill:var(--muted)"/><circle class="puff p2" cx="27" cy="-7" r="3.2" style="fill:var(--muted)"/>',
+    star:'<path class="twk" d="M-4 6l1.2 2.6 2.8.3-2.1 1.9.6 2.8-2.5-1.4-2.5 1.4.6-2.8-2.1-1.9 2.8-.3z" style="fill:var(--gold)"/><circle class="twk t2" cx="-9" cy="3" r="1.3" style="fill:var(--gold)"/><circle class="twk" cx="-8" cy="14" r="1" style="fill:var(--sun)"/>',
+    crown:'<path d="M8 2l2-8 4 5 3-7 3 7 4-5 2 8z" style="fill:var(--gold);stroke:color-mix(in srgb,var(--gold) 60%,#000);stroke-width:.8"/>'
+  }[deco]||'';
+  return `<svg viewBox="-11 -11 53 33" width="53" height="33" aria-hidden="true">${body}${extra}</svg>`;
+}
+
+/* ---------- 小卖部商品目录 ---------- */
+const SHOP={
+  items:[
+    {id:'hint',name:'提示卡',price:15,icon:'A…',desc:'闯关时看首字母且不扣分。用了照样不涨熟练度'},
+    {id:'shield',name:'护盾',price:25,icon:'盾',desc:'闯关时第一次答错不扣心，自动生效'},
+    {id:'xp2',name:'双倍经验卡',price:40,icon:'×2',desc:'下一轮结束时 XP 翻倍，自动生效'},
+    {id:'time',name:'加时沙漏',price:20,icon:'+10s',desc:'下次 60 秒快答多 10 秒，自动生效'}],
+  skin:SKINS,
+  deco:[{id:'none',name:'不装饰',price:0},{id:'flag',name:'小彩旗',price:60},{id:'smoke',name:'蒸汽烟囱',price:90},{id:'star',name:'星光尾迹',price:140},{id:'crown',name:'金色皇冠',price:260}],
+  title:[{id:'none',name:'不戴称号',price:0},{id:'t1',name:'早起的鸟',price:50},{id:'t2',name:'英语课代表',price:100},{id:'t3',name:'不规则克星',price:150},{id:'t4',name:'过去式之王',price:220},{id:'t5',name:'时间管理大师',price:320}],
+  sfx:[{id:'classic',name:'经典',price:0},{id:'piano',name:'钢琴',price:70},{id:'retro',name:'8-bit 街机',price:90},{id:'bell',name:'风铃',price:110}],
+  fx:[{id:'confetti',name:'彩纸',price:0},{id:'stars',name:'星星雨',price:80},{id:'hearts',name:'爱心雨',price:80},{id:'coins',name:'金币雨',price:150}],
+  bg:[{id:'dots',name:'点点纸',price:0},{id:'grid',name:'方格本',price:50},{id:'rails',name:'铁轨',price:90},{id:'night',name:'星空',price:130}]
+};
+const TABS=[['items','道具'],['skin','涂装'],['deco','列车装饰'],['title','称号'],['sfx','音效'],['fx','庆祝特效'],['bg','背景']];
+const owns=(cat,id)=>{const it=SHOP[cat].find(x=>x.id===id);return !it.price||(cat==='skin'?S.owned.includes(id):S.owned.includes(cat+':'+id))};
+const equipped=(cat,id)=>cat==='skin'?S.skin===id:S.equip[cat]===id;
+const titleName=()=>{const t=SHOP.title.find(x=>x.id===S.equip.title);return t&&t.id!=='none'?t.name:''};
+function applyLook(){applySkin();document.body.className=document.body.className.replace(/\bbg-\S+/g,'').trim();document.body.classList.add('bg-'+S.equip.bg);$('#train').innerHTML=trainSVG(S.equip.deco)}
+const mult=c=>c>=10?3:c>=5?2:1;
+
+/* ---------- sound & speech ---------- */
+let AC=null;
+function tone(f,d=.12,type='sine',when=0,vol=.14){
+  if(S.muted)return;
+  const pk={piano:{type:'sine',dur:1.8},retro:{type:'square',vol:.45},bell:{type:'triangle',mul:2,dur:2.4}}[S.equip&&S.equip.sfx]||{};
+  if(type!=='sawtooth'){type=pk.type||type;f*=pk.mul||1}d*=pk.dur||1;vol*=pk.vol||1;
+  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime+when;
+    const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;
+    g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d+.02)}catch(e){}
+}
+const SFX={coin(){tone(1320,.08,'square',0,.05);tone(1760,.14,'square',.07,.05)},ach(){[784,988,1175,1568].forEach((f,i)=>tone(f,.16,'triangle',i*.08))},
+  fever(){[523,784,1047].forEach((f,i)=>tone(f,.1,'sawtooth',i*.05,.05))},chest(){[392,523,659,784,1047].forEach((f,i)=>tone(f,.12,'triangle',i*.07))},
+  good(){tone(660,.1,'triangle');tone(990,.16,'triangle',.08)},bad(){tone(170,.28,'sawtooth',0,.07)},
+  win(){[523,659,784,1047].forEach((f,i)=>tone(f,.2,'triangle',i*.11))},lose(){[392,330,262].forEach((f,i)=>tone(f,.25,'triangle',i*.16))}};
+const canSpeak='speechSynthesis' in window;
+function speak(t){if(!canSpeak)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=.8;speechSynthesis.speak(u)}catch(e){}}
+const sayBtn=(text,label)=>canSpeak?`<button type="button" class="say" data-say="${esc(text)}" aria-label="${label}">▶</button>`:'';
+
+/* ---------- views ---------- */
+function show(v){['home','play','result','lib','shopv'].forEach(x=>$('#'+x).hidden=x!==v);window.scrollTo(0,0)}
+function rankOf(xp){let i=0;RANKS.forEach((r,k)=>{if(xp>=r[0])i=k});const n=RANKS[i+1];return{lvl:i+1,name:RANKS[i][1],from:RANKS[i][0],to:n?n[0]:null,next:n?n[1]:null}}
+const starOf=(i,c)=>S.stars[STATIONS[i].id+':'+c]||0;
+const cleared=i=>STATIONS[i].cars.every((_,c)=>starOf(i,c)>0);
+const unlocked=i=>i===0||S.unlock||cleared(i-1);
+const fullOpen=i=>S.unlock||cleared(i);
+const mOf=r=>S.mastery[r.b]||0;
+const mastered=list=>list.filter(r=>mOf(r)>=3).length;
+const mdots=m=>`<span class="mdots" aria-label="熟练度 ${m}/3">${[0,1,2].map(k=>`<i class="${k<m?'on':''}"></i>`).join('')}</span>`;
+const starStr=st=>`<span class="stars" aria-label="${st} 颗星">${'★'.repeat(st)}<i>${'★'.repeat(3-st)}</i></span>`;
+
+function renderHome(){
+  $('#nVerbs').textContent=ROWS.length;
+  const r=rankOf(S.xp);
+  $('#rankLvl').textContent='Lv.'+r.lvl;$('#rankName').textContent=r.name;$('#xp').textContent=S.xp;
+  $('#xpFill').style.width=(r.to?(S.xp-r.from)/(r.to-r.from)*100:100)+'%';
+  $('#xpNext').textContent=r.to?`再得 ${r.to-S.xp} XP 升为「${r.next}」`:'已是最高等级';
+  const stars=Object.values(S.stars).reduce((a,b)=>a+b,0);
+  $('#statStars').textContent=`${stars}/${MAX_STARS}`;
+  $('#statBest').textContent=`${mastered(ROWS)}/${ROWS.length}`;
+  $('#quickBest').textContent=S.best?`四选一，你的纪录是 ${S.best} 个`:'四选一，看一分钟能答对几个';
+  $('#nCars').textContent=TOTAL_CARS;
+  const wn=Object.keys(S.wrong).length;
+  $('#statWrong').textContent=wn;$('#btnReview').disabled=wn===0;
+  $('#reviewCount').textContent=wn?`${wn} 个错过的词等你复习`:'暂时没有错题，继续保持';
+  $('#map').innerHTML=STATIONS.map((s,i)=>{
+    const open=unlocked(i),done=s.boss?starOf(i,0)>0:cleared(i);
+    let body='';
+    if(s.boss){
+      body=`<div class="cars"><button type="button" class="car" data-s="${i}" data-c="0" ${open?'':'disabled'}>
+        <span class="carT">开始挑战 ${starStr(starOf(i,0))}</span><span class="carW">易混词 10 题 · 3 颗心</span></button></div>`;
+    }else{
+      const m=mastered(s.words),pct=s.words.reduce((a,r)=>a+mOf(r),0)/(s.words.length*3)*100;
+      body=`<div class="mline"><div class="mbar"><span style="width:${pct}%"></span></div><span>已掌握 ${m}/${s.words.length} 词</span></div>
+      <div class="cars">${s.cars.map((ws,c)=>{
+        const gold=mastered(ws)===ws.length;
+        return `<button type="button" class="car ${gold?'gold':''}" data-s="${i}" data-c="${c}" ${open?'':'disabled'}>
+          <span class="carT">${c+1} 号车厢 ${starStr(starOf(i,c))}</span>
+          <span class="carW">${ws.slice(0,3).map(r=>esc(r.b)).join(' · ')} …</span>
+          <span class="carM">${gold?'全部掌握':`${ws.length} 题 · 掌握 ${mastered(ws)}/${ws.length}`}</span></button>`}).join('')}
+        <button type="button" class="car fullc" data-s="${i}" data-c="full" ${open&&fullOpen(i)?'':'disabled'}>
+          <span class="carT">全站挑战 ${starStr(starOf(i,'full'))}</span>
+          <span class="carW">${fullOpen(i)?`全部 ${s.words.length} 题连考 · 5 颗心`:'所有车厢通关后开放'}</span></button>
+      </div>`;
+    }
+    return `<li class="stop ${open?'':'locked'} ${done?'done':''} ${s.boss?'boss':''}">
+      <span class="dot">${s.boss?'★':i+1}</span>
+      <div class="stopcard">
+        <div class="stoptop"><span class="sname">${s.name}</span><span class="scode">${s.code}</span></div>
+        <div class="sdesc">${open?esc(s.desc):'通关上一站的所有车厢后解锁'}</div>${body}
+      </div></li>`}).join('');
+  $('#mute').textContent=S.muted?'音效：已关闭':'音效：已开启';
+  $('#unlock').checked=!!S.unlock;
+  // daily
+  const t=dayState(),sk=streakNow();
+  $('#streak').textContent=sk;$('#flameBox').classList.toggle('lit',t.done);
+  $('#dxp').textContent=Math.min(t.xp,GOAL);$('#dfill').style.width=Math.min(100,t.xp/GOAL*100)+'%';
+  $('#dtip').textContent=t.done?'今天的目标完成了！明天再来，连续打卡不断。':sk?`再得 ${GOAL-t.xp} XP 完成今天的目标，不然 ${sk} 天的连续打卡就断了！`:`再得 ${GOAL-t.xp} XP 完成今日目标，开始连续打卡。`;
+  $('#coins').textContent=S.coins;
+  const inv=Object.entries(S.items).filter(([,n])=>n>0).map(([k,n])=>`${SHOP.items.find(x=>x.id===k).name}×${n}`);
+  $('#shopTip').textContent=inv.length?'背包：'+inv.join('、'):'道具、涂装、称号、音效、特效…';
+  $('#tkTitle').textContent=titleName();$('#tkTitle').hidden=!titleName();
+  // achievements
+  $('#achCount').textContent=`已解锁 ${Object.keys(S.ach).length} / ${ACH.length}`;
+  $('#achs').innerHTML=ACH.map(([id,name,desc])=>`<div class="ach ${S.ach[id]?'got':''}"><span class="aico">${MEDAL}</span><b>${name}</b><span>${desc}</span></div>`).join('');
+  document.querySelectorAll('.cico').forEach(e=>e.innerHTML=COIN);
+  document.querySelector('.fico').innerHTML=FLAME;
+}
+const COIN='<svg viewBox="0 0 24 24" width="100%" height="100%" aria-hidden="true"><circle cx="12" cy="12" r="10" style="fill:var(--gold)"/><circle cx="12" cy="12" r="7" style="fill:none;stroke:var(--surface);stroke-width:1.6;opacity:.7"/><path d="M12 7.5v9M9.5 9.5h5M9.5 14.5h5" style="stroke:var(--surface);stroke-width:1.8;stroke-linecap:round"/></svg>';
+
+/* ---------- answer checking ---------- */
+const norm=s=>s.toLowerCase().replace(/\s+/g,' ').replace(/[.。]/g,'').trim();
+function regular(b){if(b==='fit')return'fitted';if(/e$/.test(b))return b+'d';if(/[^aeiou]y$/.test(b))return b.slice(0,-1)+'ied';return b+'ed'}
+const ALT={get:{pp:['gotten']},show:{pp:['showed']},bear:{pp:['born']},fit:{p:['fitted'],pp:['fitted']}};
+function accepts(r,k){
+  const v=r[k],set=new Set([norm(v)]);
+  if(v.includes('/')){v.split('/').forEach(x=>set.add(norm(x)));set.add(norm(v.replace(/\s*\/\s*/g,'/')))}
+  if(r.note==='*')set.add(regular(r.b));
+  ((ALT[r.b]||{})[k]||[]).forEach(x=>set.add(x));
+  return set;
+}
+function highlight(sentence,forms){
+  let out=esc(sentence);
+  const words=[...new Set(forms.flatMap(f=>f.split(' / ')))].sort((a,b)=>b.length-a.length);
+  words.forEach(w=>{out=out.replace(new RegExp(`\\b(${w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})\\b`,'i'),'<mark>$1</mark>')});
+  return out;
+}
+
+/* ---------- typing round (stations & review) ---------- */
+let P=null;
+function newRound(o){P=Object.assign({i:0,hearts:3,maxHearts:3,newMastered:0,score:0,combo:0,maxCombo:0,errors:0,correct:0,missed:[],done:false,rank0:rankOf(S.xp).lvl},o);show('play');$('#prog').classList.toggle('timer',P.mode==='quick')}
+function startCar(i,c){
+  const s=STATIONS[i],key=s.id+':'+c;
+  if(s.boss){newRound({mode:'mc',kind:'station',idx:i,car:0,key,title:s.name,q:bossQuestions(),retry:()=>startCar(i,0)});nextMC();return}
+  const full=c==='full',list=full?s.words:s.cars[c];
+  newRound({mode:'type',kind:'station',idx:i,car:c,key,title:full?`${s.name} · 全站挑战`:`${s.name} · ${c+1} 号车厢`,
+    hearts:full?5:3,maxHearts:full?5:3,q:shuffle(list),retry:()=>startCar(i,c)});
+  renderHUD();renderType();
+}
+function nextTarget(i,c){
+  const s=STATIONS[i];
+  if(c!=='full'&&!s.boss){
+    const firstEmpty=s.cars.findIndex((_,k)=>k!==c&&starOf(i,k)===0);
+    if(c+1<s.cars.length)return[i,c+1,`下一节车厢 →`];
+    if(firstEmpty>=0)return[i,firstEmpty,`去 ${firstEmpty+1} 号车厢 →`];
+    if(starOf(i,'full')===0)return[i,'full','挑战全站 →'];
+  }
+  if(i+1<STATIONS.length&&unlocked(i+1))return[i+1,0,'下一站 →'];
+  return null;
+}
+function startReview(){
+  const ws=ROWS.filter(r=>S.wrong[r.b]);if(!ws.length)return;
+  newRound({mode:'type',kind:'review',title:'错题复习',q:shuffle(ws).slice(0,12),retry:startReview});renderHUD();renderType();
+}
+function renderHUD(){
+  $('#hudTitle').textContent=P.title;
+  $('#hearts').innerHTML=P.hearts==null?'':[...Array(P.maxHearts).keys()].map(k=>`<span class="${k<P.hearts?'on':''}">♥</span>`).join('');
+  $('#hearts').setAttribute('aria-label',P.hearts==null?'':`剩余 ${P.hearts} 颗心`);
+  $('#hudScore').textContent=P.score;$('#hudCoins').textContent=S.coins;
+  const m=mult(P.combo);$('#play').classList.toggle('fever',m===2);$('#play').classList.toggle('hyper',m===3);
+  if(m>(P.lastMult||1)){SFX.fever()}P.lastMult=m;
+  const pct=P.mode==='quick'?null:P.i/P.q.length*100;
+  $('#train').hidden=pct==null;if(pct!=null)$('#train').style.left=`max(0px, calc(${pct}% - 34px))`;
+  $('#shieldChip').hidden=!(P.kind==='station'&&P.mode==='type'&&!P.shieldUsed&&S.items.shield>0);
+  if(P.mode==='quick'){$('#hudProg').textContent=`剩余 ${Math.ceil(P.timeLeft)} 秒 · 答对 ${P.correct}`;$('#progFill').style.width=(P.timeLeft/(P.timeMax||60)*100)+'%'}
+  else{$('#hudProg').textContent=`第 ${Math.min(P.i+1,P.q.length)} / ${P.q.length} 题`;$('#progFill').style.width=(P.i/P.q.length*100)+'%'}
+  const c=$('#combo');c.hidden=P.combo<2;if(P.combo>=2){c.textContent=`连对 ×${P.combo}${m>1?(m===3?' · 光速 ×3 分':' · 超速 ×2 分'):P.combo>=3?` · 再对 ${5-P.combo} 题进入超速`:''}`;c.style.animation='none';void c.offsetWidth;c.style.animation=''}
+}
+const formWords=r=>[...new Set([r.p,r.pp,r.b].flatMap(f=>f.split(' / ')))].sort((a,b)=>b.length-a.length);
+const reEsc=w=>w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+function blankSentence(r){
+  const out=esc(r.ex);
+  for(const w of formWords(r)){const re=new RegExp(`\\b${reEsc(w)}\\b`,'i');if(re.test(out))return out.replace(re,`<span class="blank">______</span><span class="bhint">(${esc(r.b)})</span>`)}
+  return out;
+}
+/* 词义干扰项：优先同一近义组，其次中文有相同字、同一拼写小组；
+   但任何一个义项与正确义项相同或互相包含的（如 说 / 说（语言））一律排除，避免出现两个都对的选项 */
+const senses=cn=>cn.split(/[；;，,]/).map(x=>x.replace(/（[^）]*）|\([^)]*\)|…/g,'').trim()).filter(Boolean);
+const STOPCH=new Set([...'使把被的了着在']);
+function meaningOptions(r){
+  const ans=cnOf(r),sa=senses(ans),chars=new Set([...sa.join('')].filter(c=>!STOPCH.has(c)));
+  const clash=o=>senses(cnOf(o)).some(x=>sa.some(y=>x===y||x.includes(y)||y.includes(x)));
+  const scored=ROWS.filter(o=>o.b!==r.b&&!clash(o)).map(o=>{
+    let s=Math.random()*2;
+    if(CLUSTERS.some(c=>c.has(r.b)&&c.has(o.b)))s+=10;
+    const oc=cnOf(o);let hit=0;for(const ch of chars)if(oc.includes(ch))hit++;s+=Math.min(hit,2)*3;
+    if(o.g===r.g&&o.sub===r.sub)s+=2;
+    return[s,o]}).sort((a,b)=>b[0]-a[0]);
+  const opts=[ans];
+  for(const[,o]of scored){const c=cnOf(o);if(!opts.includes(c))opts.push(c);if(opts.length===4)break}
+  return shuffle(opts);
+}
+function pickMeaning(btn){
+  if(P.answered)return;
+  document.querySelectorAll('.mopt').forEach(b=>b.setAttribute('aria-pressed',b===btn));
+  P.meaning=btn.dataset.m;$('#mwrap').classList.remove('need');
+  const a1=$('#a1');if(a1&&!a1.value)a1.focus({preventScroll:true});
+}
+function renderType(){
+  const r=P.q[P.i];P.hint=false;P.answered=false;P.meaning=null;
+  P.golden=P.i>0&&Math.random()<.13;
+  $('#stage').innerHTML=`<div class="qcard ${P.golden?'golden':''}" id="qcard">
+    ${P.golden?`<div class="gbanner">神秘乘客上车！这题答对得双倍分和 5 枚时光币</div>`:''}
+    <div class="qlabel">读句子，猜词义，再写出变形</div>
+    <div class="sentence">${blankSentence(r)}</div>
+    <div class="qword"><span>${esc(r.b)}</span>${sayBtn(r.b,'朗读原形')}</div>
+    <div class="ipa">/${esc(r.ib)}/</div>
+    <div class="mwrap" id="mwrap"><div class="mlabel">① 这个词的意思是？</div>
+      <div class="mopts">${meaningOptions(r).map((m,i)=>`<button type="button" class="mopt" data-m="${esc(m)}" aria-pressed="false"><kbd>${i+1}</kbd>${esc(m)}</button>`).join('')}</div></div>
+    <div class="mlabel" style="align-self:flex-start;margin-top:8px">② 写出过去式和过去分词</div>
+    <form class="answers" id="tform" autocomplete="off" style="margin-top:2px">
+      <label class="ans"><span>过去式</span><input id="a1" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="next"></label>
+      <label class="ans"><span>过去分词</span><input id="a2" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done"></label>
+      <div class="qbtns"><button type="button" class="btn ghost" id="hint">${S.items.hint>0?`用提示卡（不扣分，剩 ${S.items.hint} 张）`:'提示首字母（分数减半）'}</button><button class="btn" id="go">确定</button></div>
+    </form>
+    <div id="fb" style="width:100%"></div></div>`;
+  const a1=$('#a1'),a2=$('#a2');
+  $('#mwrap').addEventListener('click',e=>{const b=e.target.closest('.mopt');if(b)pickMeaning(b)});
+  a1.addEventListener('keydown',e=>{if(e.key==='Enter'&&!P.answered){e.preventDefault();a2.focus()}});
+  $('#tform').addEventListener('submit',e=>{e.preventDefault();P.answered?nextType():checkType()});
+  P.freeHint=false;
+  $('#hint').addEventListener('click',()=>{P.hint=true;P.hintsUsed=(P.hintsUsed||0)+1;if(S.items.hint>0){S.items.hint--;P.freeHint=true;save()}a1.placeholder=r.p.split(' / ')[0][0]+'…';a2.placeholder=r.pp.split(' / ')[0][0]+'…';$('#hint').disabled=true;(a1.value?a2:a1).focus()});
+}
+function checkType(){
+  const r=P.q[P.i],a1=$('#a1'),a2=$('#a2');
+  if(!P.meaning){const m=$('#mwrap');m.classList.remove('need');void m.offsetWidth;m.classList.add('need');return}
+  if(!a1.value.trim()&&!a2.value.trim()){a1.focus();return}
+  const okM=P.meaning===cnOf(r);
+  const ok1=accepts(r,'p').has(norm(a1.value)),ok2=accepts(r,'pp').has(norm(a2.value)),ok=okM&&ok1&&ok2;
+  P.answered=true;a1.readOnly=a2.readOnly=true;$('#hint').disabled=true;
+  a1.classList.add(ok1?'ok':'no');a2.classList.add(ok2?'ok':'no');
+  document.querySelectorAll('.mopt').forEach(b=>{b.disabled=true;if(b.dataset.m===cnOf(r))b.classList.add('ok');else if(b.dataset.m===P.meaning)b.classList.add('no')});
+  const wrongParts=[!okM&&'词义',!ok1&&'过去式',!ok2&&'过去分词'].filter(Boolean);
+  let gain=0;
+  if(ok){P.combo++;P.maxCombo=Math.max(P.maxCombo,P.combo);P.correct++;
+    gain=(P.hint&&!P.freeHint?5:10)*mult(P.combo)*(P.golden?2:1);P.score+=gain;
+    const cg=P.golden?5:1;S.coins+=cg;P.coinsEarned=(P.coinsEarned||0)+cg;SFX.good();if(P.golden)SFX.coin();
+    if(P.kind==='review')delete S.wrong[r.b];}
+  else{P.combo=0;P.errors++;
+    if(P.kind==='station'&&!P.shieldUsed&&S.items.shield>0){S.items.shield--;P.shieldUsed=true;P.shieldNow=true}else{P.hearts--;P.shieldNow=false}
+    P.missed.push(r);S.wrong[r.b]=(S.wrong[r.b]||0)+1;SFX.bad();
+    const q=$('#qcard');q.classList.remove('shake');void q.offsetWidth;q.classList.add('shake')}
+  const before=mOf(r);
+  if(ok&&!P.hint)S.mastery[r.b]=Math.min(3,before+1);else if(!ok)S.mastery[r.b]=Math.max(0,before-1);
+  const after=mOf(r),justMastered=before<3&&after===3;if(justMastered)P.newMastered++;
+  save();
+  const mline=`<div class="mstat">熟练度 ${mdots(after)}<span>${justMastered?'这个词已掌握！':ok&&P.hint?'用了提示，熟练度不涨':after>=3?'已掌握':`再答对 ${3-after} 次就掌握了`}</span></div>`;
+  const star=r.note==='*'?`<div class="note">也可以用规则形式：${esc(regular(r.b))}</div>`:'';
+  const note=r.note&&r.note!=='*'?`<div class="note">${esc(r.note)}</div>`:'';
+  $('#fb').innerHTML=`<div class="fb ${ok?'good':'bad'}">
+    <div class="fbhead"><span>${ok?pick(PRAISE):(P.hearts<=0?'心用完了！':'差一点！')+wrongParts.join('、')+'不对'}</span>${ok?`<span class="gain">+${gain}</span>`:''}</div>
+    ${!ok&&P.shieldNow?'<div class="note">护盾挡住了这次错误，没有扣心。</div>':''}
+    <div class="fbcn">${esc(r.b)}：${esc(cnOf(r))}</div>
+    <div class="forms"><span>${esc(r.b)}</span><i>→</i><span>${esc(r.p)}</span><i>→</i><span>${esc(r.pp)}</span>${sayBtn(`${r.b}, ${r.p.replace(' / ',', ')}, ${r.pp}`,'朗读三种形式')}</div>
+    <div class="ipa">/${esc(r.ib)}/ · /${esc(r.ip)}/ · /${esc(r.ipp)}/</div>${note}${star}
+    <div class="ex">${highlight(r.ex,[r.p,r.pp,r.b])}</div>${mline}</div>
+    ${P.hearts<=0&&!P.revived&&P.kind==='station'?`<div class="revive" id="revive"><b>要复活吗？</b><span>花 30 枚时光币加 1 颗心，接着闯关（你有 ${S.coins} 枚）</span>
+      <button type="button" class="btn sun" id="revBtn" ${S.coins<30?'disabled':''}>${S.coins<30?'时光币不够':'复活继续'}</button></div>`:''}`;
+  $('#go').textContent=P.hearts<=0?'结束本轮':P.i+1>=P.q.length?'查看结果':'下一题 →';
+  const rb=$('#revBtn');if(rb)rb.onclick=()=>{S.coins-=30;S.stats.revives++;P.hearts=1;P.revived=true;save();$('#revive').remove();
+    $('#go').textContent=P.i+1>=P.q.length?'查看结果':'下一题 →';SFX.chest();renderHUD();$('#go').focus()};
+  $('#go').focus({preventScroll:true});
+  renderHUD();
+  $('#fb').scrollIntoView({block:'nearest'});
+}
+function nextType(){P.i++;if(P.hearts<=0||P.i>=P.q.length){finish();return}renderHUD();renderType()}
+
+/* ---------- multiple choice (quick & boss) ---------- */
+/* 变形干扰项：学生真实会犯的错——套错规律（brang / thinked / tought）、拼写陷阱（forgoten / writen）、
+   另一个形式（过去式当分词）、乱加 -ed。全部排除这个词任何合法的写法 */
+const PAIRS={bought:['brought','baught'],brought:['bought','braught'],taught:['thought','tought'],thought:['taught','thaught'],caught:['cought','catched'],
+  fought:['faught','fighted'],sought:['saught','seeked'],laid:['layed','lain'],lain:['laid','layn'],lay:['laid','lied'],lied:['lay','laid'],
+  won:['wan','winned'],lost:['losed','lose'],left:['leaved','leaft'],felt:['feeled','fell'],fell:['felt','falled'],fallen:['felled','fell'],
+  heard:['heared','herd'],said:['sayed','sed'],paid:['payed','pained'],made:['maked','madden'],had:['haved','has'],went:['gone','wented'],
+  gone:['went','goed'],did:['done','doed'],done:['did','doed'],was:['were','been'],been:['was','being'],saw:['seen','seed'],seen:['saw','sawn'],
+  ate:['eaten','eated'],eaten:['ate','eatten'],came:['come','comed'],become:['became','becomed'],ran:['run','runned'],run:['ran','runned'],
+  got:['gotten','getted'],gotten:['got','getten'],found:['founded','finded'],wound:['wounded','winded'],bound:['bounded','binded'],ground:['grounded','grinded'],
+  rose:['raised','risen'],risen:['raised','rose'],lit:['lighten','lited'],shone:['shined','shinned'],struck:['striked','stroke'],stuck:['sticked','stucked'],
+  bore:['born','beared'],borne:['bore','beared'],born:['bore','beared'],tore:['torn','teared'],torn:['tore','teared'],wore:['worn','weared'],worn:['wore','weared'],
+  beat:['beaten','beated'],beaten:['beat','beatten'],forgotten:['forgoten','forgot'],forgot:['forgotten','forgetted'],written:['writen','wrote'],
+  bitten:['biten','bit'],hidden:['hiden','hid'],ridden:['riden','rode'],forbidden:['forbiden','forbade'],chosen:['choosen','chose'],broken:['broke','breaked'],
+  spoken:['spoke','speaked'],stolen:['stole','stealed'],woken:['waked','woke'],frozen:['froze','freezed'],given:['gave','gived'],forgiven:['forgave','forgived'],
+  taken:['took','taked'],shaken:['shook','shaked'],driven:['drove','drived'],
+  flown:['flew','flied'],flew:['flown','flied'],known:['knew','knowed'],knew:['known','knowed'],grown:['grew','growed'],grew:['grown','growed'],
+  thrown:['threw','throwed'],threw:['thrown','throwed'],blown:['blew','blowed'],blew:['blown','blowed'],drawn:['drew','drawed'],drew:['drawn','drawed']};
+function formDistractors(r,k){
+  const ans=r[k],ok=accepts(r,k),out=[],b=r.b;
+  const add=x=>{if(x&&/^[a-z]+$/.test(x)&&x!==ans&&!ok.has(norm(x))&&!out.includes(x))out.push(x)};
+  const strong=[],pattern=[];
+  (PAIRS[ans]||[]).forEach(x=>strong.push(x));
+  strong.push(k==='p'?r.pp:r.p);
+  const lastI=/i(?=[nm][^aeiou]*$)/;                                    // sing / drink / swim / spin 型
+  if(lastI.test(b))pattern.push(b.replace(lastI,'a'),b.replace(lastI,'u'),b.replace(lastI,'o'));
+  if(/ee[pln]$/.test(b))pattern.push(b.replace('ee','e')+'t');   // keep → kept 型
+  if(/ea/.test(b))pattern.push(b.replace('ea','e')+'t',b.replace('ea','o'));
+  if(/[oa]w$/.test(b))pattern.push(b.replace(/[oa]w$/,'ew'),b+'n');
+  const aE=/a(?=[nm][^aeiou]*$)/,uE=/u(?=[nm][^aeiou]*$)/;
+  if(aE.test(ans))pattern.push(ans.replace(aE,'u'));if(uE.test(ans))pattern.push(ans.replace(uE,'a'));  // sang↔sung
+  if(/ought$/.test(ans))pattern.push(ans.replace(/ought$/,'aught'));if(/aught$/.test(ans))pattern.push(ans.replace(/aught$/,'ought'));
+  pattern.push(ans.replace(/([bdgtnpz])\1en$/,'$1en'));               // forgotten → forgoten
+  if(k==='pp')pattern.push(r.p+(r.p.endsWith('e')?'n':'en'));          // broke → broken 类推：wented
+  if(/[^aeiou][aeiou][^aeiouwxy]$/.test(b))pattern.push(b+b.slice(-1)+'ed');  // hitted / cutted
+  pattern.push(b+(b.endsWith('e')?'d':'ed'));
+  shuffle(strong).slice(0,2).forEach(add);
+  shuffle(pattern).forEach(x=>{if(out.length<3)add(x)});
+  out.splice(3);
+  while(out.length<3){const o=pick(ROWS.filter(x=>x.g===r.g))[k];add(o.split(' / ')[0])}
+  return out;
+}
+function mcFromRow(r){
+  if(Math.random()<1/3){const ans=cnOf(r);
+    return{row:r,ans,opts:meaningOptions(r),cn:true,sub:'',sent:highlight(r.ex,[r.p,r.pp,r.b]),prompt:`<b>${esc(r.b)}</b>在句子里的意思是？`}}
+  const k=Math.random()<.5?'p':'pp',ans=r[k];
+  const opts=formDistractors(r,k);
+  return{row:r,ans,opts:shuffle([ans,...opts]),sub:'',sent:blankSentence(r),prompt:`<b>${esc(r.b)}</b>的${k==='p'?'过去式':'过去分词'}是？`};
+}
+function bossQuestions(){
+  const qs=[];
+  TRAPS.forEach(t=>{
+    const sides=[t.slice(0,4),t.slice(4,8)],pool=[...new Set(sides.flatMap(s=>s.slice(0,3)).filter(x=>x!=='—'&&!x.includes(' ')))];
+    sides.forEach(([b,p,pp,cn])=>{
+      if(p==='—')return;
+      [['p',p,'过去式'],['pp',pp,'过去分词']].forEach(([k,ans,label])=>{
+        const extra=[regular(b)];
+        const opts=shuffle([...new Set([...pool,...extra])].filter(x=>x!==ans)).slice(0,3);
+        qs.push({trap:{b,p,pp,cn},ans,opts:shuffle([ans,...opts]),sub:`意思是“${cn}”`,prompt:`<b>${esc(b)}</b>的${label}是？`});
+      });
+    });
+  });
+  return shuffle(qs).slice(0,10);
+}
+function startQuick(){
+  const bonus=S.items.time>0?10:0;if(bonus){S.items.time--;save();later(()=>toast('加时沙漏生效','这一局有 70 秒'))}
+  newRound({mode:'quick',kind:'quick',title:'60 秒快答',hearts:null,timeLeft:60+bonus,timeMax:60+bonus,retry:startQuick});
+  nextMC();
+  P.timer=setInterval(()=>{P.timeLeft=Math.max(0,P.timeLeft-.1);if(P.timeLeft<=0){finish();return}
+    $('#progFill').style.width=(P.timeLeft/P.timeMax*100)+'%';$('#hudProg').textContent=`剩余 ${Math.ceil(P.timeLeft)} 秒 · 答对 ${P.correct}`},100);
+}
+function nextMC(){
+  P.cur=P.mode==='quick'?mcFromRow(pick(ROWS)):P.q[P.i];P.locked=false;
+  const m=P.cur;
+  $('#stage').innerHTML=`<div class="qcard" id="qcard">${m.sent?`<div class="sentence">${m.sent}</div>`:''}${m.sub?`<div class="qcn">${esc(m.sub)}</div>`:''}<div class="qprompt">${m.prompt}</div>
+    <div class="opts">${m.opts.map((o,i)=>`<button type="button" class="opt ${m.cn?'cnopt':''}" data-o="${esc(o)}"><kbd>${i+1}</kbd>${esc(o)}</button>`).join('')}</div>
+    <div class="mcfb" id="fb" aria-live="polite"></div></div>`;
+  renderHUD();
+}
+function choose(o){
+  if(!P||P.locked||P.done)return;P.locked=true;
+  const m=P.cur,ok=o===m.ans;
+  document.querySelectorAll('.opt').forEach(b=>{if(b.dataset.o===m.ans)b.classList.add('ok');else if(b.dataset.o===o)b.classList.add('no');b.disabled=true});
+  if(ok){P.combo++;P.maxCombo=Math.max(P.maxCombo,P.combo);P.correct++;
+    P.score+=P.mode==='quick'?1:10*mult(P.combo);S.coins+=1;P.coinsEarned=(P.coinsEarned||0)+1;SFX.good();
+    $('#fb').innerHTML=`<span style="color:var(--good)">${pick(PRAISE)}</span>`}
+  else{P.combo=0;P.errors++;if(P.hearts!=null)P.hearts--;
+    if(P.mode==='quick')P.timeLeft=Math.max(0,P.timeLeft-3);
+    const w=m.row||m.trap;P.missed.push(w);if(m.row){S.wrong[m.row.b]=(S.wrong[m.row.b]||0)+1;S.mastery[m.row.b]=Math.max(0,mOf(m.row)-1);save()}
+    SFX.bad();const q=$('#qcard');q.classList.add('shake');
+    $('#fb').innerHTML=`正确：<b>${esc(w.b)} → ${esc(w.p)} → ${esc(w.pp)}</b>（${esc(w.cn.replace(/^v\.\s*/,''))}）${P.mode==='quick'?'　时间 −3 秒':''}`}
+  renderHUD();
+  setTimeout(()=>{
+    if(P.done)return;
+    if(P.mode==='mc'){P.i++;if(P.hearts<=0||P.i>=P.q.length){finish();return}}
+    if(P.mode==='quick'&&P.timeLeft<=0){finish();return}
+    nextMC();
+  },ok?600:1600);
+}
+
+/* ---------- results ---------- */
+function finish(){
+  if(P.done)return;P.done=true;clearInterval(P.timer);
+  const failed=P.hearts!=null&&P.hearts<=0;
+  let stars=0,xp=P.mode==='quick'?P.score*5:P.score,record=false,title,sub;
+  if(P.kind==='station'&&!failed){
+    const lenient=P.car==='full'?2:1;
+    stars=P.errors===0?(P.hintsUsed?2:3):P.errors<=lenient?2:1;
+    if(stars>(S.stars[P.key]||0))S.stars[P.key]=stars;xp+=stars*(P.car==='full'?25:10)}
+  if(P.mode==='quick'&&P.score>S.best){S.best=P.score;record=P.score>0}
+  let doubled=false;if(xp>0&&S.items.xp2>0){S.items.xp2--;xp*=2;doubled=true}
+  addXP(xp);S.stats.rounds++;S.stats.maxCombo=Math.max(S.stats.maxCombo,P.maxCombo);
+  // treasure chest: bigger for better runs, 1 in 8 is a jackpot
+  let chest=0,jackpot=false;
+  if(!failed){chest=5+stars*5+(P.mode==='quick'?P.score:P.correct)+(Math.random()*8|0);if(Math.random()<.125){chest*=3;jackpot=true}}
+  save();checkAch();
+  const lvlUp=rankOf(S.xp).lvl>P.rank0;
+  if(P.mode==='quick'){title=record?'新纪录！':'时间到！';sub=`60 秒内答对 ${P.score} 个${record?'，刷新了你的最好成绩':`，最好成绩是 ${S.best} 个`}。`}
+  else if(failed){title='列车没油了…';sub='心用完了。看看下面错的词，再来一轮就能过站。'}
+  else if(P.kind==='review'){title='复习完成！';sub=`答对 ${P.correct} 个，这些词已经从错题本里移除。`}
+  else{title=stars===3?'满星到站！':'到站！';sub=stars===3?'一个都没错，也没用提示，太厉害了。':P.hintsUsed&&!P.errors?'全对！不用提示就能拿三颗星。':'再来一轮，争取三颗星。'}
+  const nt=P.kind==='station'&&!failed?nextTarget(P.idx,P.car):null,canNext=!!nt;
+  let mInfo='';
+  if(P.kind==='station'&&!STATIONS[P.idx].boss){const s=STATIONS[P.idx],list=P.car==='full'?s.words:s.cars[P.car],m=mastered(list);
+    mInfo=`<p class="rsub">${P.newMastered?`本轮新掌握 <b>${P.newMastered}</b> 个词。`:''}这节已掌握 ${m}/${list.length} 个词${m<list.length?'，每个词答对 3 次才算掌握，再来一轮吧。':'，全部拿下！'}</p>`}
+  else if(P.newMastered)mInfo=`<p class="rsub">本轮新掌握 <b>${P.newMastered}</b> 个词。</p>`;
+  const missed=[...new Map(P.missed.map(w=>[w.b+w.p,w])).values()];
+  $('#result').innerHTML=`<div class="rcard">
+    <div class="rtitle">${title}</div>
+    ${P.kind==='station'?`<div class="bigstars" aria-label="${stars} 颗星">${[0,1,2].map(k=>k<stars?`<span style="animation-delay:${.15+k*.2}s">★</span>`:'<i>★</i>').join('')}</div>`:''}
+    <p class="rsub">${sub}</p>${mInfo}
+    ${lvlUp?`<div class="levelup">升级了！现在是 Lv.${rankOf(S.xp).lvl}「${rankOf(S.xp).name}」</div>`:''}
+    <div class="rstats">
+      <div><b>${P.score}</b><span>${P.mode==='quick'?'答对数':'得分'}</span></div>
+      <div><b>${P.correct}/${P.correct+P.errors}</b><span>正确率</span></div>
+      <div><b>${P.maxCombo}</b><span>最长连对</span></div>
+      <div><b>+${xp}</b><span>获得 XP${doubled?'（双倍卡）':''}</span></div>
+    </div>
+    <div class="dayline">今日目标 ${Math.min(dayState().xp,GOAL)}/${GOAL} XP${dayState().done?' · 已完成':` · 还差 ${GOAL-dayState().xp}`} · 本轮赚了 ${P.coinsEarned||0} 枚时光币</div>
+    ${chest?`<button type="button" class="chest" id="chest"><span class="lid"></span><span class="box"></span><span class="ctext">点我开宝箱</span></button>`:''}
+    ${missed.length?`<div class="missed"><h3>这轮错过的词（已加入错题本）</h3><ul>${missed.map(w=>`<li><b>${esc(w.b)} – ${esc(w.p)} – ${esc(w.pp)}</b><span>${esc(w.cn.replace(/^v\.\s*/,''))}</span></li>`).join('')}</ul></div>`:''}
+    <div class="ractions">
+      ${canNext?`<button type="button" class="btn sun" id="rNext">${nt[2]}</button>`:''}
+      <button type="button" class="btn" id="rRetry">再来一轮</button>
+      <button type="button" class="btn ghost" id="rHome">回到路线图</button>
+    </div></div>`;
+  show('result');
+  const retry=P.retry;
+  $('#rRetry').onclick=retry;$('#rHome').onclick=goHome;
+  if(canNext)$('#rNext').onclick=()=>startCar(nt[0],nt[1]);
+  const ch=$('#chest');
+  if(ch)ch.onclick=()=>{if(ch.classList.contains('open')||ch.classList.contains('shaking'))return;ch.classList.add('shaking');
+    setTimeout(()=>{ch.classList.remove('shaking');ch.classList.add('open');S.coins+=chest;save();checkAch();SFX.chest();if(jackpot)confetti();
+      ch.querySelector('.ctext').innerHTML=`${jackpot?'<em>大奖！</em>':''}+${chest} 时光币`},650)};
+  if(stars>=2||record||lvlUp){SFX.win();confetti()}else if(failed)SFX.lose();
+}
+function goHome(){if(P){clearInterval(P.timer);P.done=true}renderHome();show('home')}
+
+/* ---------- library ---------- */
+function renderLib(){
+  const term=norm($('#libq').value||'');let html='';
+  GROUPS.forEach(g=>{
+    const rows=ROWS.filter(r=>r.g===g.id&&(!term||(r.b+' '+r.p+' '+r.pp+' '+r.cn).toLowerCase().includes(term)));
+    if(!rows.length)return;
+    html+=`<div class="lgroup"><h2>${esc(g.name)}<span class="code">${esc(g.code)}</span></h2>`;
+    let sub=null;
+    rows.forEach(r=>{
+      if(r.sub!==sub){if(sub!==null)html+='</tbody></table></div>';sub=r.sub;html+=`${r.sub?`<h3>${esc(r.sub)}</h3>`:''}<div class="tbl"><table><tbody>`}
+      html+=`<tr><td class="md">${mdots(mOf(r))}</td><td class="w">${esc(r.b)}<small>/${esc(r.ib)}/</small></td><td class="w">${esc(r.p)}<small>/${esc(r.ip)}/</small></td><td class="w">${esc(r.pp)}<small>/${esc(r.ipp)}/</small></td><td class="c">${esc(cnOf(r))}</td><td class="s">${sayBtn(`${r.b}, ${r.p.replace(' / ',', ')}, ${r.pp}`,'朗读')}</td></tr>`;
+    });
+    html+='</tbody></table></div></div>';
+  });
+  $('#libList').innerHTML=html||'<p class="empty">没有找到这个词，换个拼写或中文试试。</p>';
+}
+
+/* ---------- confetti ---------- */
+function confetti(){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const c=$('#fx'),x=c.getContext('2d'),dpr=devicePixelRatio||1,W=innerWidth,H=innerHeight;
+  c.width=W*dpr;c.height=H*dpr;x.scale(dpr,dpr);c.hidden=false;
+  const cs=getComputedStyle(document.documentElement),cols=['--brand','--sun','--good','--gold','--bad'].map(v=>cs.getPropertyValue(v).trim());
+  const ps=Array.from({length:150},()=>({x:W/2,y:H*.3,vx:(Math.random()-.5)*14,vy:-Math.random()*13-3,s:Math.random()*7+5,r:Math.random()*6,vr:(Math.random()-.5)*.3,c:pick(cols)}));
+  const shape=S.equip.fx,gold=cs.getPropertyValue('--gold').trim();
+  if(shape==='coins')ps.forEach(p=>p.c=gold);if(shape==='hearts')ps.forEach(p=>p.c=pick([cs.getPropertyValue('--bad').trim(),cs.getPropertyValue('--sun').trim(),'#ff7eb6']));
+  const draw=p=>{const s=p.s;
+    if(shape==='stars'){x.beginPath();for(let k=0;k<10;k++){const rr=k%2?s*.45:s,a=k*Math.PI/5;x.lineTo(Math.cos(a)*rr,Math.sin(a)*rr)}x.fill()}
+    else if(shape==='hearts'){x.beginPath();x.moveTo(0,s*.6);x.bezierCurveTo(-s*1.2,-s*.2,-s*.4,-s,0,-s*.35);x.bezierCurveTo(s*.4,-s,s*1.2,-s*.2,0,s*.6);x.fill()}
+    else if(shape==='coins'){x.beginPath();x.ellipse(0,0,s*.7,s*.7*Math.abs(Math.cos(p.r)),0,0,Math.PI*2);x.fill()}
+    else x.fillRect(-s/2,-s/4,s,s/2)};
+  let t=0;(function f(){x.clearRect(0,0,W,H);ps.forEach(p=>{p.vy+=.33;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;x.save();x.translate(p.x,p.y);x.rotate(shape==='coins'?0:p.r);x.fillStyle=p.c;draw(p);x.restore()});
+    if(++t<120)requestAnimationFrame(f);else{x.clearRect(0,0,W,H);c.hidden=true}})();
+}
+
+/* ---------- wiring ---------- */
+$('#map').addEventListener('click',e=>{const b=e.target.closest('.car');if(b&&!b.disabled)startCar(+b.dataset.s,b.dataset.c==='full'?'full':+b.dataset.c)});
+$('#btnQuick').onclick=startQuick;$('#btnReview').onclick=startReview;
+$('#btnLib').onclick=()=>{renderLib();show('lib')};$('#libBack').onclick=goHome;$('#libq').addEventListener('input',renderLib);
+$('#quit').onclick=goHome;
+/* ---------- shop view ---------- */
+let shopTab='items';
+function preview(cat,it){
+  if(cat==='items')return `<span class="pv pv-item">${it.icon}</span>`;
+  if(cat==='skin')return `<span class="pv" style="background:linear-gradient(135deg,${it.l},${it.d})"></span>`;
+  if(cat==='deco')return `<span class="pv pv-deco">${trainSVG(it.id)}</span>`;
+  if(cat==='title')return `<span class="pv pv-title"><span class="tk-title">${it.id==='none'?'——':it.name}</span></span>`;
+  if(cat==='sfx')return `<span class="pv pv-sfx">${[0,1,2,3,4].map(i=>`<i style="height:${[40,75,55,90,65][i]}%"></i>`).join('')}</span>`;
+  if(cat==='fx')return `<span class="pv pv-fx">${{confetti:'<i class="r"></i><i class="r b"></i><i class="r c"></i>',stars:'★ ★ ★',hearts:'♥ ♥ ♥',coins:'● ● ●'}[it.id]}</span>`;
+  if(cat==='bg')return `<span class="pv bg-${it.id}"></span>`;
+}
+function renderShop(){
+  $('#shopCoins').textContent=S.coins;
+  $('#shopTabs').innerHTML=TABS.map(([k,n])=>`<button type="button" role="tab" class="tab" data-tab="${k}" aria-selected="${k===shopTab}">${n}</button>`).join('');
+  $('#shopGrid').innerHTML=SHOP[shopTab].map(it=>{
+    let state,btn;
+    if(shopTab==='items'){const n=S.items[it.id]||0;state=`背包里有 ${n} 个`;btn=`<button type="button" class="btn sm" data-buy="${it.id}" ${S.coins<it.price?'disabled':''}>${it.price} 币 买一个</button>`}
+    else if(equipped(shopTab,it.id)){state='使用中';btn=`<button type="button" class="btn ghost sm" disabled>使用中</button>`}
+    else if(owns(shopTab,it.id)){state='已拥有';btn=`<button type="button" class="btn ghost sm" data-use="${it.id}">换上</button>`}
+    else{state=`${it.price} 时光币`;btn=`<button type="button" class="btn sm" data-buy="${it.id}" ${S.coins<it.price?'disabled':''}>${S.coins<it.price?`还差 ${it.price-S.coins} 币`:'购买并换上'}</button>`}
+    return `<div class="card ${equipped(shopTab,it.id)?'on':''}">${preview(shopTab,it)}<b>${it.name}</b>${it.desc?`<span class="cdesc">${it.desc}</span>`:''}
+      <span class="cstate">${state}</span><div class="cbtns">${shopTab==='sfx'?`<button type="button" class="btn ghost sm" data-try="${it.id}">试听</button>`:''}${shopTab==='fx'?`<button type="button" class="btn ghost sm" data-try="${it.id}">预览</button>`:''}${btn}</div></div>`}).join('');
+}
+function equip(cat,id){if(cat==='skin')S.skin=id;else S.equip[cat]=id;save();applyLook()}
+$('#shopv').addEventListener('click',e=>{
+  const t=e.target.closest('[data-tab]');if(t){shopTab=t.dataset.tab;renderShop();return}
+  const tr=e.target.closest('[data-try]');
+  if(tr){if(shopTab==='sfx'){const old=S.equip.sfx;S.equip.sfx=tr.dataset.try;SFX.good();setTimeout(()=>SFX.win(),300);setTimeout(()=>S.equip.sfx=old,1400)}
+    else{const old=S.equip.fx;S.equip.fx=tr.dataset.try;confetti();S.equip.fx=old}return}
+  const u=e.target.closest('[data-use]');if(u){equip(shopTab,u.dataset.use);renderShop();return}
+  const b=e.target.closest('[data-buy]');if(!b)return;
+  const it=SHOP[shopTab].find(x=>x.id===b.dataset.buy);if(S.coins<it.price)return;
+  S.coins-=it.price;SFX.coin();
+  if(shopTab==='items'){S.items[it.id]=(S.items[it.id]||0)+1;later(()=>toast('买到：'+it.name,`背包里现在有 ${S.items[it.id]} 个`))}
+  else{if(shopTab==='skin')S.owned.push(it.id);else S.owned.push(shopTab+':'+it.id);equip(shopTab,it.id);later(()=>toast('买到：'+it.name,'已经换上了'))}
+  save();checkAch();renderShop();
+});
+$('#btnShop').onclick=()=>{renderShop();show('shopv')};
+$('#shopBack').onclick=goHome;
+$('#mute').onclick=()=>{S.muted=!S.muted;save();renderHome()};
+$('#unlock').onchange=e=>{S.unlock=e.target.checked;save();renderHome()};
+$('#reset').onclick=()=>{$('#resetConfirm').hidden=false};
+$('#resetNo').onclick=()=>{$('#resetConfirm').hidden=true};
+$('#resetYes').onclick=()=>{S=FRESH();save();applyLook();$('#resetConfirm').hidden=true;renderHome()};
+$('#stage').addEventListener('click',e=>{const o=e.target.closest('.opt');if(o)choose(o.dataset.o)});
+document.addEventListener('click',e=>{const s=e.target.closest('.say');if(s){e.preventDefault();speak(s.dataset.say)}});
+document.addEventListener('keydown',e=>{
+  if($('#play').hidden||!P)return;
+  const n=+e.key;
+  if(P.mode==='type'){if(e.target.tagName!=='INPUT'&&n>=1&&n<=4){const b=document.querySelectorAll('.mopt')[n-1];if(b)pickMeaning(b)}return}if(n>=1&&n<=4){const b=document.querySelectorAll('.opt')[n-1];if(b)choose(b.dataset.o)}
+});
+applyLook();checkAch();renderHome();
+</script>
+
+</body>
+</html>
